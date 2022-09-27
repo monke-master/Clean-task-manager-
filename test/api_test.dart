@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:task_manager_arch/repository/api.dart';
-import 'package:task_manager_arch/repository/repository_response.dart';
+import 'package:task_manager_arch/models/data_response.dart';
 import 'package:http/http.dart' as http;
 
 const String base ='http://localhost:8080';
@@ -142,7 +142,7 @@ void main() {
   group("User data test", () {
 
     test("get user", () async {
-      RepositoryResponse response = await api.getUser('1');
+      DataResponse response = await api.getUser('1');
       var expected = {
         'id': '1',
         'email': 'get.me@gmail.com',
@@ -152,12 +152,12 @@ void main() {
     });
 
     test("get non existing user", () async {
-      RepositoryResponse response = await api.getUser('404');
+      DataResponse response = await api.getUser('404');
       expect(response.statusCode, 404);
     });
 
     test("get user by email", () async {
-      RepositoryResponse response = await api.getUserByEmail('get.me@gmail.com');
+      DataResponse response = await api.getUserByEmail('get.me@gmail.com');
       var expected = {
         'id': '1',
         'email': 'get.me@gmail.com',
@@ -171,17 +171,17 @@ void main() {
         'email': 'add.me@gmail.com',
         'password': 'password',
         'registration_date': '2022-08-11 13:04:00'};
-      RepositoryResponse response = await api.addUser('4', data);
+      DataResponse response = await api.addUser('4', data);
       expect(response.statusCode, 200);
     });
 
     test("Delete user", () async {
-      RepositoryResponse  response = await api.deleteUser('0');
+      DataResponse  response = await api.deleteUser('0');
       expect(response.statusCode, 200);
     });
 
     test("Delete non existing user", () async {
-      RepositoryResponse  response = await api.deleteUser('404');
+      DataResponse  response = await api.deleteUser('404');
       expect(response.statusCode, 200);
     });
 
@@ -189,7 +189,7 @@ void main() {
       Map<String, dynamic> data = {
         'email': 'new@gmail.com',
         'password': 'password'};
-      RepositoryResponse response = await api.updateUser('2', data);
+      DataResponse response = await api.updateUser('2', data);
       expect(response.statusCode, 200);
     });
 
@@ -197,7 +197,7 @@ void main() {
       Map<String, dynamic> data = {
         'email': 'update.password@gmail.com',
         'password': 'new_password'};
-      RepositoryResponse response = await api.updateUser('3', data);
+      DataResponse response = await api.updateUser('3', data);
       expect(response.statusCode, 200);
     });
   });
@@ -205,7 +205,7 @@ void main() {
 
   group("Category tests", () {
     test("get category", () async {
-      RepositoryResponse response = await api.getCategory('1');
+      DataResponse response = await api.getCategory('1');
       var expected = {
         'category_id': '1',
         'user_id': '1',
@@ -215,12 +215,12 @@ void main() {
     });
 
     test("get non existing category", () async {
-      RepositoryResponse response = await api.getCategory('404');
+      DataResponse response = await api.getCategory('404');
       expect(response.statusCode, 404);
     });
 
     test("Get user's categories", () async {
-      RepositoryResponse response = await api.getCategoriesList('1');
+      DataResponse response = await api.getCategoriesList('1');
       var expected = {
         '1' : {
           'user_id': '1',
@@ -242,7 +242,7 @@ void main() {
         'title': 'just category',
         'creation_date': '2022-09-11 11:39:00'
       };
-      RepositoryResponse response = await api.addCategory('4', data);
+      DataResponse response = await api.addCategory('4', data);
       expect(response.statusCode, 200);
     });
 
@@ -250,17 +250,17 @@ void main() {
       var data = {
         'title': 'new category',
       };
-      RepositoryResponse response = await api.updateCategory('3', data);
+      DataResponse response = await api.updateCategory('3', data);
       expect(response.statusCode, 200);
     });
 
     test("Delete category", () async {
-      RepositoryResponse response = await api.deleteCategory('0');
+      DataResponse response = await api.deleteCategory('0');
       expect(response.statusCode, 200);
     });
 
     test("Delete non-existing category", () async {
-      RepositoryResponse response = await api.deleteCategory('404');
+      DataResponse response = await api.deleteCategory('404');
       expect(response.statusCode, 200);
     });
 
@@ -270,7 +270,7 @@ void main() {
   group("Tasks tests", () {
 
     test("Get task", () async {
-      RepositoryResponse response = await api.getTask('1');
+      DataResponse response = await api.getTask('1');
       var expected = {
         'task_id': '1',
         'user_id': '1',
@@ -286,12 +286,12 @@ void main() {
     });
 
     test("Get non existing task", () async {
-      RepositoryResponse response = await api.getTask('404');
+      DataResponse response = await api.getTask('404');
       expect(response.statusCode, 404);
     });
 
     test("Get user's tasks", () async {
-      RepositoryResponse response = await api.getUserTasks('1');
+      DataResponse response = await api.getUserTasks('1');
       var expected = {
         '1': {
           'user_id': '1',
@@ -318,7 +318,7 @@ void main() {
     });
 
     test("Get category's tasks", () async {
-      RepositoryResponse response = await api.getCategoryTasks('1');
+      DataResponse response = await api.getCategoryTasks('1');
       var expected = {
         '1': {
           'user_id': '1',
@@ -351,7 +351,7 @@ void main() {
         'creation_date': '2022-09-12 18:32:00',
         'completed': '0',
       };
-      RepositoryResponse response = await api.addTask('10', data);
+      DataResponse response = await api.addTask('10', data);
       expect(response.statusCode, 200);
     });
 
@@ -366,7 +366,7 @@ void main() {
         'emailed': '1',
         'repeating': '4356789'
       };
-      RepositoryResponse response = await api.addTask('11', data);
+      DataResponse response = await api.addTask('11', data);
       expect(response.statusCode, 200);
     });
 
@@ -375,7 +375,7 @@ void main() {
         'title': "new Title",
         'completed': '0'
       };
-      RepositoryResponse response = await api.updateTask('4', data);
+      DataResponse response = await api.updateTask('4', data);
       expect(response.statusCode, 200);
     });
 
@@ -385,7 +385,7 @@ void main() {
         'date': '2022-09-12 18:32:00',
         'completed': '0'
       };
-      RepositoryResponse response = await api.updateTask('5', data);
+      DataResponse response = await api.updateTask('5', data);
       expect(response.statusCode, 200);
     });
 
@@ -394,7 +394,7 @@ void main() {
         'title': 'Update completed',
         'completed': '1'
       };
-      RepositoryResponse response = await api.updateTask('6', data);
+      DataResponse response = await api.updateTask('6', data);
       expect(response.statusCode, 200);
     });
 
@@ -405,7 +405,7 @@ void main() {
         'category_id': '3',
         'completed': '0',
       };
-      RepositoryResponse response = await api.updateTask('7', data);
+      DataResponse response = await api.updateTask('7', data);
       expect(response.statusCode, 200);
     });
 
@@ -415,7 +415,7 @@ void main() {
         'completed': '0',
         'emailed': '1'
       };
-      RepositoryResponse response = await api.updateTask('8', data);
+      DataResponse response = await api.updateTask('8', data);
       expect(response.statusCode, 200);
     });
 
@@ -425,7 +425,7 @@ void main() {
         'completed': '0',
         'repeating': '1500'
       };
-      RepositoryResponse response = await api.updateTask('9', data);
+      DataResponse response = await api.updateTask('9', data);
       expect(response.statusCode, 200);
     });
 

@@ -2,33 +2,33 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
-import 'package:task_manager_arch/repository/repository_response.dart';
+import 'package:task_manager_arch/models/data_response.dart';
 
 class Api {
 
   final String _base ='http://localhost:8080';
 
   // User methods
-  Future<RepositoryResponse> addUser(String userId,
+  Future<DataResponse> addUser(String userId,
       Map<String, dynamic> userData) async {
     var uri = Uri.parse("$_base/user/$userId");
     try {
       var response = await http.post(uri, body: userData);
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> getUser(String userId) async {
+  Future<DataResponse> getUser(String userId) async {
     var uri = Uri.parse("$_base/user/$userId");
     try {
       var response = await http.get(uri);
@@ -38,19 +38,19 @@ class Api {
       } else {
         data['body'] = response.body;
       }
-      return RepositoryResponse(data: data, statusCode: response.statusCode);
+      return DataResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> getUserByEmail(String email) async {
+  Future<DataResponse> getUserByEmail(String email) async {
     var uri = Uri.parse('$_base/user/email/$email');
     try {
       var response = await http.get(uri);
@@ -60,55 +60,55 @@ class Api {
       } else {
         data['body'] = response.body;
       }
-      return RepositoryResponse(data: data, statusCode: response.statusCode);
+      return DataResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
       }
     }
 
-  Future<RepositoryResponse> updateUser(String userId,
+  Future<DataResponse> updateUser(String userId,
       Map<String, dynamic> userData) async {
     var uri = Uri.parse("$_base/user/$userId");
     try {
       var response = await http.put(uri, body: userData);
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> deleteUser(String userId) async {
+  Future<DataResponse> deleteUser(String userId) async {
     var uri = Uri.parse("$_base/user/$userId");
     try {
       var response = await http.delete(uri);
-      return RepositoryResponse(data: {'body': response.body},
+      return DataResponse(data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> getCategory(String categoryId) async {
+  Future<DataResponse> getCategory(String categoryId) async {
     var uri = Uri.parse("$_base/category/$categoryId");
     try {
       var response = await http.get(uri);
@@ -118,19 +118,19 @@ class Api {
       } else {
         data['body'] = response.body;
       }
-      return RepositoryResponse(data: data, statusCode: response.statusCode);
+      return DataResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> getCategoriesList(String userId) async {
+  Future<DataResponse> getCategoriesList(String userId) async {
     var uri = Uri.parse("$_base/user/$userId/categories");
     try {
       var response = await http.get(uri);
@@ -140,68 +140,68 @@ class Api {
       } else {
         data['body'] = response.body;
       }
-      return RepositoryResponse(data: data, statusCode: response.statusCode);
+      return DataResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> addCategory(String categoryId,
+  Future<DataResponse> addCategory(String categoryId,
       Map<String, dynamic> categoryData) async {
     var uri = Uri.parse("$_base/category/$categoryId");
     try {
       var response = await http.post(uri, body: categoryData);
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> updateCategory(String categoryId,
+  Future<DataResponse> updateCategory(String categoryId,
       Map<String, dynamic> categoryData) async {
     var uri = Uri.parse("$_base/category/$categoryId");
     try {
       var response = await http.put(uri, body: categoryData);
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> deleteCategory(String categoryId) async {
+  Future<DataResponse> deleteCategory(String categoryId) async {
     var uri = Uri.parse("$_base/category/$categoryId");
     try {
       var response = await http.delete(uri);
-      return RepositoryResponse(data: {'body': response.body},
+      return DataResponse(data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
@@ -209,7 +209,7 @@ class Api {
 
   // Task methods
 
-  Future<RepositoryResponse> getTask(String taskId) async {
+  Future<DataResponse> getTask(String taskId) async {
     var uri = Uri.parse("$_base/task/$taskId");
     try {
       var response = await http.get(uri);
@@ -219,19 +219,19 @@ class Api {
       } else {
         data['body'] = response.body;
       }
-      return RepositoryResponse(data: data, statusCode: response.statusCode);
+      return DataResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> getUserTasks(String userId) async {
+  Future<DataResponse> getUserTasks(String userId) async {
     var uri = Uri.parse("$_base/user/$userId/tasks");
     try {
       var response = await http.get(uri);
@@ -241,19 +241,19 @@ class Api {
       } else {
         data['body'] = response.body;
       }
-      return RepositoryResponse(data: data, statusCode: response.statusCode);
+      return DataResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> getCategoryTasks(String categoryId) async {
+  Future<DataResponse> getCategoryTasks(String categoryId) async {
     var uri = Uri.parse("$_base/category/$categoryId/tasks");
     try {
       var response = await http.get(uri);
@@ -263,68 +263,68 @@ class Api {
       } else {
         data['body'] = response.body;
       }
-      return RepositoryResponse(data: data, statusCode: response.statusCode);
+      return DataResponse(data: data, statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> addTask(String taskId,
+  Future<DataResponse> addTask(String taskId,
       Map<String, dynamic> taskData) async {
     var uri = Uri.parse("$_base/task/$taskId");
     try {
       var response = await http.post(uri, body: taskData);
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> updateTask(String taskId,
+  Future<DataResponse> updateTask(String taskId,
       Map<String, dynamic> taskData) async {
     var uri = Uri.parse("$_base/task/$taskId");
     try {
       var response = await http.put(uri, body: taskData);
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
   }
 
-  Future<RepositoryResponse> deleteTask(String taskId) async {
+  Future<DataResponse> deleteTask(String taskId) async {
     var uri = Uri.parse("$_base/task/$taskId");
     try {
       var response = await http.delete(uri);
-      return RepositoryResponse(data: {'body': response.body},
+      return DataResponse(data: {'body': response.body},
           statusCode: response.statusCode);
     } on SocketException {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': "No network connection"},
           statusCode: 0);
     } catch (error) {
-      return RepositoryResponse(
+      return DataResponse(
           data: {'body': error},
           statusCode: -1);
     }
