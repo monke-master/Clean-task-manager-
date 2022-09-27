@@ -14,13 +14,21 @@ class InMemoryCache {
   }
 
   DataResponse getUser(String userId) {
-    return DataResponse(data: _user, statusCode: 200);
+    if (_user.isNotEmpty) {
+      return DataResponse(data: _user, statusCode: 200);
+    } else {
+      return DataResponse(data: {"body": "User not found"}, statusCode: 404);
+    }
   }
 
   DataResponse updateUser(Map<String, dynamic> userData) {
-    _user['email'] = userData['email'];
-    _user['password'] = userData['password'];
-    return DataResponse(data: {"body": "Success"}, statusCode: 200);
+    if (_user.isNotEmpty) {
+      _user['email'] = userData['email'];
+      _user['password'] = userData['password'];
+      return DataResponse(data: {"body": "Success"}, statusCode: 200);
+    } else {
+      return DataResponse(data: {"body": "User not found"}, statusCode: 404);
+    }
   }
 
   DataResponse deleteUser() {
@@ -35,16 +43,28 @@ class InMemoryCache {
   }
 
   DataResponse getCategory(String categoryId) {
-    return DataResponse(data: _categories[categoryId]!, statusCode: 200);
+    if (_categories.containsKey(categoryId)) {
+      return DataResponse(data: _categories[categoryId]!, statusCode: 200);
+    } else {
+      return DataResponse(data: {"body": "Category not found"}, statusCode: 404);
+    }
   }
 
   DataResponse getCategoriesList() {
-    return DataResponse(data: _categories, statusCode: 200);
+    if (_categories.isNotEmpty) {
+      return DataResponse(data: _categories, statusCode: 200);
+    } else {
+      return DataResponse(data: {"body": "Categories not found"}, statusCode: 404);
+    }
   }
 
   DataResponse updateCategory(String categoryId, Map<String, dynamic> categoryData) {
-    _categories[categoryId]!['title'] = categoryData['title'];
-    return DataResponse(data: {"body": "Success"}, statusCode: 200);
+    if (_categories.containsKey(categoryId)) {
+      _categories[categoryId]!['title'] = categoryData['title'];
+      return DataResponse(data: {"body": "Success"}, statusCode: 200);
+    } else {
+      return DataResponse(data: {"body": "Category not found"}, statusCode: 404);
+    }
   }
 
   DataResponse deleteCategory(String categoryId) {
@@ -59,28 +79,49 @@ class InMemoryCache {
   }
 
   DataResponse getTask(String taskId) {
-    return DataResponse(data: _tasks[taskId]!, statusCode: 200);
+    if (_tasks.containsKey(taskId)) {
+      return DataResponse(data: _tasks[taskId]!, statusCode: 200);
+    } else {
+      return DataResponse(data: {"body": "Task not found"}, statusCode: 404);
+    }
   }
 
   DataResponse getUserTasks() {
-    return DataResponse(data: _tasks, statusCode: 200);
+    if (_tasks.isNotEmpty) {
+      return DataResponse(data: _tasks, statusCode: 200);
+    } else {
+      return DataResponse(data: {"body": "Tasks not found"}, statusCode: 404);
+    }
   }
 
   DataResponse getCategoryTasks(String categoryId) {
-    Map<String, dynamic> responseData = {};
-    for (String taskId in _tasks.keys) {
-      if (_tasks[taskId]!['categoryId'] == categoryId) {
-        responseData[taskId] = _tasks[taskId];
+    if (_categories.containsKey(categoryId)) {
+      Map<String, dynamic> responseData = {};
+      for (String taskId in _tasks.keys) {
+        if (_tasks[taskId]!['categoryId'] == categoryId) {
+          responseData[taskId] = _tasks[taskId];
+        }
       }
+      if (responseData.isNotEmpty) {
+        return DataResponse(data: responseData, statusCode: 200);
+      } else {
+        return DataResponse(data: {"body": "Tasks not found"}, statusCode: 404);
+      }
+    } else {
+      return DataResponse(data: {"body": "Category not found"}, statusCode: 404);
     }
-    return DataResponse(data: responseData, statusCode: 200);
+
   }
 
   DataResponse updateTask(String taskId, Map<String, dynamic> taskData) {
-    for (String key in taskData.keys) {
-      _tasks[taskId]![key] = taskData[key];
+    if (_tasks.containsKey(taskId)) {
+      for (String key in taskData.keys) {
+        _tasks[taskId]![key] = taskData[key];
+      }
+      return DataResponse(data: {"body": "Success"}, statusCode: 200);
+    } else {
+      return DataResponse(data: {"body": "Task not found"}, statusCode: 404);
     }
-    return DataResponse(data: {"body": "Success"}, statusCode: 200);
   }
 
   DataResponse deleteTask(String taskId) {

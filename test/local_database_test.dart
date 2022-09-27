@@ -215,12 +215,12 @@ void main() {
     test("Get categories list", () async {
       var result = await database.getCategoriesList("1");
       var expected = {
-        '\\categories\\1': {
+        '1': {
             "user_id": "1",
             "title": "Get me ",
             "creation_date": '2022-08-11 13:04:00'
         },
-        '\\categories\\2': {
+        '2': {
           "user_id": "1",
           "title": "Get me in list",
           "creation_date": '2022-08-11 13:04:00'
@@ -268,13 +268,13 @@ void main() {
     test("Get user's tasks", () async {
       var result = await database.getUserTasks('1');
       var expected = {
-        "\\tasks\\1": {
+        "1": {
           'user_id': '1',
           'title': 'Get me',
           'creation_date': '2022-08-11 13:04:00',
           'completed': 0
         },
-        "\\tasks\\2" : {
+        "2" : {
           'user_id': '1',
           'title': 'Get me in list',
           'creation_date': '2022-08-11 13:04:00',
@@ -288,14 +288,14 @@ void main() {
     test("Get category's tasks", () async {
       var result = await database.getCategoryTasks("1");
       var expected = {
-        "\\tasks\\2": {
+        "2": {
           'user_id': '1',
           'title': 'Get me in list',
           'creation_date': '2022-08-11 13:04:00',
           'completed': 0,
           'category_id': '1'
         },
-        "\\tasks\\3" : {
+        "3" : {
           'user_id': '2',
           'title': 'Get me in list',
           'creation_date': '2022-08-11 13:04:00',

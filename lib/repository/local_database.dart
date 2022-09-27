@@ -1,4 +1,5 @@
 import 'package:localstore/localstore.dart';
+import 'package:task_manager_arch/helpers/string_helper.dart';
 import 'package:task_manager_arch/models/data_response.dart';
 
 class LocalDatabase {
@@ -36,7 +37,6 @@ class LocalDatabase {
   }
 
   // User methods
-
   Future<DataResponse> putUser(String userId, Map<String, dynamic> data) async {
     await _database.collection('user').doc(userId).set(data);
     return DataResponse(data: {"body": "Success"}, statusCode: 200);
@@ -80,7 +80,7 @@ class LocalDatabase {
 
     for (String categoryId in categories!.keys) {
       if (categories[categoryId]['user_id'] == userId) {
-        result[categoryId] = categories[categoryId];
+        result[StringHelper.getId(categoryId)] = categories[categoryId];
       }
     }
 
@@ -122,7 +122,7 @@ class LocalDatabase {
 
     for (String taskId in tasks.keys) {
       if (tasks[taskId]['user_id'] == userId) {
-        result[taskId] = tasks[taskId];
+        result[StringHelper.getId(taskId)] = tasks[taskId];
       }
     }
 
@@ -144,7 +144,7 @@ class LocalDatabase {
 
     for (String taskId in tasks.keys) {
       if (tasks[taskId]['category_id'] == categoryId) {
-        result[taskId] = tasks[taskId];
+        result[StringHelper.getId(taskId)] = tasks[taskId];
       }
     }
 
@@ -159,6 +159,8 @@ class LocalDatabase {
     await _database.collection('tasks').doc(taskId).delete();
     return DataResponse(data: {"body": "Success"}, statusCode: 200);
   }
+
+
 }
 
 

@@ -24,12 +24,12 @@ void main() {
         'theme': 'dart'});
       localDatabase.putUser("guest", {});
       localDatabase.putCategory('1', {
-        "user_id": "1",
+        "user_id": "guest",
         "title": "Get me ",
         "creation_date": '2022-08-11 13:04:00'
       });
       localDatabase.putCategory('1', {
-        'user_id': '1',
+        'user_id': 'guest',
         'title': 'Get me',
         'creation_date': '2022-08-11 13:04:00',
         'completed': 0
@@ -41,7 +41,7 @@ void main() {
 
       var expectedTasks = {
         '1': {
-          'user_id': '1',
+          'user_id': 'guest',
           'title': 'Get me',
           'creation_date': '2022-08-11 13:04:00',
           'completed': 0
@@ -49,14 +49,14 @@ void main() {
       };
       var expectedCategories = {
         '1': {
-          "user_id": "1",
+          "user_id": "guest",
           "title": "Get me ",
           "creation_date": '2022-08-11 13:04:00'
         }
       };
 
-      expect(cache.getCategoriesList(), expectedCategories);
-      expect(cache.getUserTasks(), expectedTasks);
+      expect(cache.getCategoriesList().data, expectedCategories);
+      expect(cache.getUserTasks().data, expectedTasks);
     });
   });
 }
