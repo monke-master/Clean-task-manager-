@@ -13,7 +13,7 @@ class InMemoryCache {
     return DataResponse(data: {"body": "Success"}, statusCode: 200);
   }
 
-  DataResponse getUser(String userId) {
+  DataResponse getUser() {
     if (_user.isNotEmpty) {
       return DataResponse(data: _user, statusCode: 200);
     } else {
@@ -51,16 +51,14 @@ class InMemoryCache {
   }
 
   DataResponse getCategoriesList() {
-    if (_categories.isNotEmpty) {
-      return DataResponse(data: _categories, statusCode: 200);
-    } else {
-      return DataResponse(data: {"body": "Categories not found"}, statusCode: 404);
-    }
+    return DataResponse(data: _categories, statusCode: 200);
   }
 
   DataResponse updateCategory(String categoryId, Map<String, dynamic> categoryData) {
     if (_categories.containsKey(categoryId)) {
-      _categories[categoryId]!['title'] = categoryData['title'];
+      for (String key in categoryData.keys) {
+        _categories[categoryId]![key] = categoryData[key];
+      }
       return DataResponse(data: {"body": "Success"}, statusCode: 200);
     } else {
       return DataResponse(data: {"body": "Category not found"}, statusCode: 404);
@@ -87,11 +85,7 @@ class InMemoryCache {
   }
 
   DataResponse getUserTasks() {
-    if (_tasks.isNotEmpty) {
-      return DataResponse(data: _tasks, statusCode: 200);
-    } else {
-      return DataResponse(data: {"body": "Tasks not found"}, statusCode: 404);
-    }
+    return DataResponse(data: _tasks, statusCode: 200);
   }
 
   DataResponse getCategoryTasks(String categoryId) {
@@ -102,11 +96,7 @@ class InMemoryCache {
           responseData[taskId] = _tasks[taskId];
         }
       }
-      if (responseData.isNotEmpty) {
-        return DataResponse(data: responseData, statusCode: 200);
-      } else {
-        return DataResponse(data: {"body": "Tasks not found"}, statusCode: 404);
-      }
+      return DataResponse(data: responseData, statusCode: 200);
     } else {
       return DataResponse(data: {"body": "Category not found"}, statusCode: 404);
     }

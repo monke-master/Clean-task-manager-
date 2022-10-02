@@ -14,7 +14,7 @@ class User {
     required this.registrationDate});
 
   @override
-  int hash() => hashValues(id, email, password, registrationDate);
+  int hash() => Object.hash(id, email, password, registrationDate);
 
   @override
   bool operator == (Object object) =>
