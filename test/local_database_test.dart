@@ -149,7 +149,7 @@ void main() {
         "password": "password",
         "registration_date": '2022-08-11 13:04:00'
       };
-      database.putUser('4', data);
+      await database.putUser('4', data);
       var result = await store.collection('user').doc('4').get();
       expect(result, data);
     });
@@ -207,7 +207,7 @@ void main() {
         "title": "New category",
         "creation_date": '2022-08-11 13:04:00'
       };
-      database.putCategory('4', data);
+      await database.putCategory('4', data);
       var result = await store.collection('categories').doc('4').get();
       expect(data, result);
     });
@@ -316,7 +316,7 @@ void main() {
         'creation_date': '2022-08-11 13:04:00',
         'completed': 0
       };
-      database.putTask('10', data);
+      await database.putTask('10', data);
       var result = await store.collection('tasks').doc('10').get();
       expect(result, data);
     });
@@ -416,6 +416,7 @@ void main() {
 
   group('Config data tests', () {
 
+
     test('Get config', () async {
       var res = await database.getConfig();
       var expected = {
@@ -423,6 +424,20 @@ void main() {
         'theme': 'light'
       };
       expect(res.data, expected);
+    });
+
+
+    test("Update config's user id", () async {
+      var newData = {
+        'user_id': '21'
+      };
+      var expected = {
+        'user_id': '21',
+        'theme': 'light'
+      };
+      await database.putConfig(newData);
+      var result = await store.collection('config').doc('1').get();
+      expect(expected, result);
     });
 
     test('Put config', () async {
@@ -434,6 +449,8 @@ void main() {
       var res = await store.collection('config').doc('1').get();
       expect(res, data);
     });
+
+
   });
 
   tearDownAll(() async {

@@ -14,7 +14,8 @@ void main() {
   InMemoryCache cache = InMemoryCache();
   LocalDatabase localDatabase = LocalDatabase();
   localDatabase.init();
-  Service service = Service(cache, Api(), localDatabase);
+  Api api = Api();
+  Service service = Service(cache, api, localDatabase);
 
   group("Guest user auth test", () {
 
@@ -35,7 +36,7 @@ void main() {
         'user_id': 'guest',
         'title': 'Get me',
         'creation_date': '2022-08-11 13:04:00',
-        'completed': 0
+        'completed': '0'
       });
     });
 
@@ -50,7 +51,7 @@ void main() {
           'user_id': 'guest',
           'title': 'Get me',
           'creation_date': '2022-08-11 13:04:00',
-          'completed': 0
+          'completed': '0'
         }
       };
       var expectedCategories = {
@@ -74,20 +75,20 @@ void main() {
       DateTime registrationDate = DateTime.parse("2022-08-11 13:04:00");
       String id = Object.hash(email, password, registrationDate).toString();
       User user = User(id: id, email: email, password: password, registrationDate: registrationDate);
-      await service.signUp(user);
+      var signUpResponse = await service.signUp(user);
 
       var expectedUser = {
         "id": id,
         'password': password,
         'email': email,
-        'registration_date': registrationDate
+        'registration_date': registrationDate.toString()
       };
       var expectedTasks = {
         '1': {
           'user_id': id,
           'title': 'Get me',
           'creation_date': '2022-08-11 13:04:00',
-          'completed': 0
+          'completed': '0'
         }
       };
       var expectedCategories = {
@@ -101,6 +102,7 @@ void main() {
       expect(cache.getCategoriesList().data, expectedCategories);
       expect(cache.getUserTasks().data, expectedTasks);
       expect(cache.getUser().data, expectedUser);
+      expect(signUpResponse.statusCode, 200);
     });
 
     tearDownAll(() async {
@@ -112,16 +114,19 @@ void main() {
         cache.deleteUser();
         cache.deleteTask('$id');
         cache.deleteCategory('$id');
+        await api.deleteTask('$id');
+        await api.deleteCategory('$id');
+        await api.deleteUser('$id');
       }
     });
   });
 
-  group("User with account", () {
+  group("User with account auth tests", () {
     setUpAll(() {
       var userData = {
         "email": "email@mail.ru",
         'password': "strong_pass",
-        'creation_date': '2022-08-11 13:04:00'
+        'registration_date': '2022-08-11 13:04:00'
       };
       localDatabase.putConfig({
         "user_id": '1',
@@ -136,7 +141,7 @@ void main() {
         'user_id': '1',
         'title': 'Get me',
         'creation_date': '2022-08-11 13:04:00',
-        'completed': 0
+        'completed': '0'
       });
     });
 
@@ -147,14 +152,14 @@ void main() {
         "id": "1",
         "email": "email@mail.ru",
         'password': "strong_pass",
-        'creation_date': '2022-08-11 13:04:00'
+        'registration_date': '2022-08-11 13:04:00'
       };
       var expectedTasks = {
         '1': {
           'user_id': '1',
           'title': 'Get me',
           'creation_date': '2022-08-11 13:04:00',
-          'completed': 0
+          'completed': '0'
         }
       };
       var expectedCategories = {
@@ -178,5 +183,50 @@ void main() {
         await localDatabase.deleteConfig();
       }
     });
+  });
+
+  group("Crud tests", () {
+    setUpAll(() async {
+      var userData = {
+        "email": "email@mail.ru",
+        'password': "strong_pass",
+        'registration_date': '2022-08-11 13:04:00'
+      };
+      await localDatabase.putConfig({
+        "user_id": '1',
+        'theme': 'dart'});
+      await localDatabase.putUser("1", userData);
+      await api.addUser('1', userData);
+      service.initialize();
+    });
+
+    test("Update user's email test", () async {
+      User oldUser = User(
+          id: '1',
+          email: "email@mail.ru",
+          password: "strong_pass",
+          registrationDate: DateTime.parse('2022-08-11 13:04:00'));
+      User newUser = User(
+          id: '1',
+          email: "new.email@mail.ru",
+          password: "strong_pass",
+          registrationDate: DateTime.parse('2022-08-11 13:04:00'));
+
+      var res = await service.updateUser(oldUser, newUser);
+      var localDBRes = await localDatabase.getUser('1');
+      var cacheRes = cache.getUser();
+      cacheRes.data.remove("id");
+      var expectedUserData = {
+        "email": "new.email@mail.ru",
+        'password': "strong_pass",
+        'registration_date': '2022-08-11 13:04:00'
+      };
+
+      expect(res.statusCode, 200);
+      expect(cacheRes.data, expectedUserData);
+      expect(localDBRes.data, expectedUserData);
+    });
+
+
   });
 }

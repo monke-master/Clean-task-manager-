@@ -19,6 +19,13 @@ class LocalDatabase {
 
   // Config methods
   Future<DataResponse> putConfig(Map<String, dynamic> data) async {
+    var oldData = await getConfig();
+    if (oldData.statusCode == 200) {
+      for (String key in data.keys) {
+        oldData.data[key] = data[key];
+      }
+      data = oldData.data;
+    }
     await _database.collection('config').doc('1').set(data);
     return DataResponse(data: {"body": "Success"}, statusCode: 200);
   }
@@ -38,6 +45,13 @@ class LocalDatabase {
 
   // User methods
   Future<DataResponse> putUser(String userId, Map<String, dynamic> data) async {
+    var oldData = await getUser(userId);
+    if (oldData.statusCode == 200) {
+      for (String key in data.keys) {
+        oldData.data[key] = data[key];
+      }
+      data = oldData.data;
+    }
     await _database.collection('user').doc(userId).set(data);
     return DataResponse(data: {"body": "Success"}, statusCode: 200);
   }
@@ -57,6 +71,13 @@ class LocalDatabase {
 
   // Categories methods
   Future<DataResponse> putCategory(String categoryId, Map<String, dynamic> data) async {
+    var oldData = await getCategory(categoryId);
+    if (oldData.statusCode == 200) {
+      for (String key in data.keys) {
+        oldData.data[key] = data[key];
+      }
+      data = oldData.data;
+    }
     await _database.collection('categories').doc(categoryId).set(data);
     return DataResponse(data: {"body": "Success"}, statusCode: 200);
   }
@@ -99,6 +120,13 @@ class LocalDatabase {
 
   // tasks methods
   Future<DataResponse> putTask(String taskId, Map<String, dynamic> data) async {
+    var oldData = await getTask(taskId);
+    if (oldData.statusCode == 200) {
+      for (String key in data.keys) {
+        oldData.data[key] = data[key];
+      }
+      data = oldData.data;
+    }
     await _database.collection('tasks').doc(taskId).set(data);
     return DataResponse(data: {"body": "Success"}, statusCode: 200);
   }
