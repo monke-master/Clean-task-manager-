@@ -1,7 +1,9 @@
 import 'dart:developer';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:http/http.dart';
+import 'package:task_manager_arch/models/category.dart';
 import 'package:task_manager_arch/models/data_response.dart';
 import 'package:task_manager_arch/models/user.dart';
 import 'package:task_manager_arch/repository/api.dart';
@@ -23,19 +25,24 @@ class Service {
     // Проверка наличия активного пользователя на устройстве
     DataResponse config = await _localRepo.getConfig();
     String userId;
+
     // Если на устройстве нет авторизированного пользователя,
     if (config.statusCode == 404) { // то создаем гостевую учетную запись
-      _localRepo.putConfig({
+      await _localRepo.putConfig({
         'user_id': 'guest',
-        'theme': 'system'
+        'theme': 'system',
+        'language': Platform.localeName,
+        'notify_about_sign_up': true
       });
       userId = "guest";
       await _localRepo.putUser(userId, {});
       _sync = false;
+
     } else { // иначе получаем данные для входа
       userId = config.data['user_id'];
       _sync = userId != 'guest';
     }
+
     // Копирование данных из локального хранилища в кэш
     DataResponse getUser = await _localRepo.getUser(userId);
     _cacheRepo.addUser(userId, getUser.data);
@@ -53,7 +60,6 @@ class Service {
         _cacheRepo.addTask(taskId, getTasks.data[taskId]);
       }
     }
-
   }
 
   // Аутентификация
@@ -92,7 +98,7 @@ class Service {
       await _localRepo.putConfig(config.data);
 
       // Редактируем id создателя категории
-      var categories = _cacheRepo.getCategoriesList().data;
+      var categories = _cacheRepo.getCategoriesList();
       for (String categoryId in categories.keys) {
         var category = categories[categoryId];
         category['user_id'] = userId;
@@ -101,7 +107,7 @@ class Service {
       }
 
       // Редактируем id создателя задачи
-      var tasks = _cacheRepo.getUserTasks().data;
+      var tasks = _cacheRepo.getUserTasks();
       for (String taskId in tasks.keys) {
         var task = tasks[taskId];
         task['user_id'] = userId;
@@ -119,8 +125,8 @@ class Service {
 
   // Загрузка данных с устройства на сервер
   Future<DataResponse> syncFromLocalToServer() async {
-    var categories = _cacheRepo.getCategoriesList().data;
-    var tasks = _cacheRepo.getUserTasks().data;
+    var categories = _cacheRepo.getCategoriesList();
+    var tasks = _cacheRepo.getUserTasks();
 
     // Загрузка категорий
     for (String categoryId in categories.keys) {
@@ -174,30 +180,16 @@ class Service {
   User getUser() {
     var userJson = _cacheRepo.getUser();
     User user = User(
-        id: userJson.data['id'],
-        email: userJson.data['email'],
-        password: userJson.data['password'],
-        registrationDate: userJson.data['registrationDate']);
+        id: userJson['id'],
+        email: userJson['email'],
+        password: userJson['password'],
+        registrationDate: userJson['registrationDate']);
     return user;
   }
 
   // Удаление пользователя
   Future<DataResponse> deleteUser() async {
-    String userId = _cacheRepo.getUser().data['id'];
-    var tasksJsonList = _cacheRepo.getUserTasks().data;
-    var categoriesJsonList = _cacheRepo.getCategoriesList().data;
-
-    // Удаление задач из кэша и памяти устройства
-    for (String taskId in tasksJsonList.keys) {
-      _cacheRepo.deleteTask(taskId);
-      _localRepo.deleteTask(taskId);
-    }
-
-    // Удаление категорий из кэша и памяти устройства
-    for (String categoryId in categoriesJsonList.keys) {
-      _cacheRepo.deleteCategory(categoryId);
-      _localRepo.deleteCategory(categoryId);
-    }
+    String userId = _cacheRepo.getUser()['id'];
 
     // Удаление пользователя из кэша и памяти устройства
     _cacheRepo.deleteUser();
@@ -206,25 +198,56 @@ class Service {
 
     // Удаление данных с сервера (при наличии учетной записи)
     if (_sync) {
-      // Удаление задач
-      for (String taskId in tasksJsonList.keys) {
-        DataResponse deleteResponse = await _apiRepo.deleteTask(taskId);
-        if (deleteResponse.statusCode != 200) {
-          return deleteResponse;
-        }
-      }
-      // Удаление категорий
-      for (String categoryId in categoriesJsonList.keys) {
-        DataResponse deleteResponse = await _apiRepo.deleteCategory(categoryId);
-        if (deleteResponse.statusCode != 200) {
-          return deleteResponse;
-        }
-      }
       // Удаление пользователя
       return await _apiRepo.deleteUser(userId);
     }
 
     return DataResponse(data: {"body": "Success"}, statusCode: 200);
+  }
+
+  Category getCategory(String categoryId) {
+    var categoryJson = _cacheRepo.getCategory(categoryId);
+    Category category = Category(
+        categoryId: categoryId,
+        userId: categoryJson['userId'],
+        title: categoryJson['title'],
+        creationDate: categoryJson['creation_date']);
+    return category;
+  }
+
+  List<Category> getCategoriesList() {
+    var categoriesJson = _cacheRepo.getCategoriesList();
+    List<Category> categories = [];
+    for (String categoryId in categoriesJson.keys) {
+      var categoryJson = categoriesJson[categoryId];
+      Category category = Category(
+          categoryId: categoryId,
+          userId: categoryJson['userId'],
+          title: categoryJson['title'],
+          creationDate: categoryJson['creation_date']);
+      categories.add(category);
+    }
+    return categories;
+  }
+
+
+
+  Future<DataResponse> addCategory(Category category) async {
+    var categoryJson = {
+      'user_id': category.userId,
+      'title': category.title,
+      'creation_date': category.creationDate,
+    };
+
+    _cacheRepo.addCategory(category.categoryId, categoryJson);
+    await _localRepo.putCategory(category.categoryId, categoryJson);
+
+    if (_sync) {
+      var apiResponse = await _apiRepo.addCategory(category.categoryId, categoryJson);
+      return apiResponse;
+    } else {
+      return DataResponse(data: {"body": "Success"}, statusCode: 200);
+    }
   }
 
 

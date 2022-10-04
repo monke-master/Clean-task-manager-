@@ -13,7 +13,7 @@ class Category {
             required this.creationDate});
 
   @override
-  int hash() => hashValues(categoryId, userId, title, creationDate);
+  int hash() => Object.hash(categoryId, userId, title, creationDate);
 
   @override
   bool operator == (Object object) =>

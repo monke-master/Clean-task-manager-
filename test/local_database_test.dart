@@ -16,6 +16,7 @@ void main() {
     database.init();
 
     // Данные пользователей для тестов
+    store.collection('user').doc('-1').set({});
     store.collection("user").doc('0').set({
       "email": "delete.me@gmail.com",
       "password": "password",
@@ -128,6 +129,10 @@ void main() {
 
   group("user tests", () {
 
+    test("Get user with no data", () async {
+      var res = await database.getUser("-1");
+      expect({}, res.data);
+    });
     test("get user", () async {
       var result = await database.getUser('1');
       var expected = {
