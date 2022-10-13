@@ -18,19 +18,19 @@ class Task {
 
 
   @override
-  int hash() => hashValues(taskId, categoryId, userId, title, date,
+  int get hashCode => Object.hash(taskId, categoryId, userId, title, date,
                            creationDate, completed, repeating, emailed);
 
   @override
-  bool operator == (Object object) =>
-      object is Task &&
-          object.taskId == taskId &&
-          object.categoryId == categoryId &&
-          object.userId == userId &&
-          object.title == title &&
-          object.date == date &&
-          object.creationDate == creationDate &&
-          object.completed == completed &&
-          object.repeating == repeating &&
-          object.emailed == emailed;
+  bool operator == (Object other) =>
+      other is Task &&
+          other.taskId == taskId &&
+          other.categoryId == categoryId &&
+          other.userId == userId &&
+          other.title == title &&
+          other.date == date &&
+          other.creationDate == creationDate &&
+          other.completed == completed &&
+          other.repeating == repeating &&
+          other.emailed == emailed;
 }

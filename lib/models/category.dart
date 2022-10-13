@@ -1,27 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:task_manager_arch/models/task.dart';
-
 class Category {
 
   String categoryId;
   String userId;
   String title;
   DateTime creationDate;
-  List<Task> tasks = [];
 
   Category({required this.categoryId, required this.userId, required this.title,
             required this.creationDate});
 
   @override
-  int hash() => Object.hash(categoryId, userId, title, creationDate);
+  int get hashCode => Object.hash(categoryId, userId, title, creationDate);
 
   @override
-  bool operator == (Object object) =>
-          object is Category &&
-          object.categoryId == categoryId &&
-          object.userId == userId &&
-          object.title == title &&
-          object.creationDate == creationDate;
+  bool operator == (Object other) =>
+          other is Category &&
+          other.categoryId == categoryId &&
+          other.userId == userId &&
+          other.title == title &&
+          other.creationDate == creationDate;
 
 
 

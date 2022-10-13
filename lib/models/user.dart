@@ -1,28 +1,25 @@
-import 'package:flutter/material.dart';
-
-import 'category.dart';
-
 class User {
 
   String id;
-  String email;
-  String password;
-  DateTime registrationDate;
-  List<Category> categories = [];
+  String? email;
+  String? password;
+  DateTime? registrationDate;
 
   User({required this.id, required this.email, required this.password,
     required this.registrationDate});
 
   @override
-  int hash() => Object.hash(id, email, password, registrationDate);
+  int get hashCode => Object.hash(id, email, password, registrationDate);
 
   @override
-  bool operator == (Object object) =>
-      object is User &&
-      object.id == id &&
-      object.email == email &&
-      object.password == password &&
-      object.registrationDate == registrationDate;
+  bool operator == (Object other) =>
+      other is User &&
+      other.id == id &&
+      other.email == email &&
+      other.password == password &&
+      other.registrationDate == registrationDate;
+
+
 
 
 }

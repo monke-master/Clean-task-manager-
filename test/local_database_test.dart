@@ -1,5 +1,3 @@
-
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:localstore/localstore.dart';
@@ -131,11 +129,16 @@ void main() {
 
     test("Get user with no data", () async {
       var res = await database.getUser("-1");
-      expect({}, res.data);
+      var expected = {
+        'id': '-1'
+      };
+      expect(res.data, expected);
     });
+
     test("get user", () async {
       var result = await database.getUser('1');
       var expected = {
+        'id': '1',
         "email": "get.me@gmail.com",
         "password": "password",
         "registration_date": '2022-08-11 13:04:00'
@@ -163,28 +166,38 @@ void main() {
       var data = {
         'email': "new.email@gmail.com",
         "password": "password",
-        "registration_date": '2022-08-11 13:04:00'
       };
+
       database.putUser('2', data);
       var result = await store.collection('user').doc('2').get();
-      expect(result, data);
+
+      var expectedUser = {
+        'id': '2',
+        'email': "new.email@gmail.com",
+        "password": "password",
+        "registration_date": '2022-08-11 13:04:00'
+      };
+      expect(result, expectedUser);
     });
 
     test("Update user's password", () async {
-      var data = {
+      var updatedData = {
+        'email': "update.password@gmail.com",
+        "password": "new_pass",
+      };
+
+      database.putUser('3', updatedData);
+      var result = await store.collection('user').doc('3').get();
+
+      var expectedUser = {
+        'id': '3',
         'email': "update.password@gmail.com",
         "password": "new_pass",
         "registration_date": '2022-08-11 13:04:00'
       };
-      database.putUser('3', data);
-      var result = await store.collection('user').doc('3').get();
-      expect(result, data);
+      expect(result, expectedUser);
     });
 
-    test("Delete non existing user", () async {
-      DataResponse response = await database.deleteUser('56789');
-      expect(response.statusCode, 200);
-    });
   });
 
 
@@ -194,6 +207,7 @@ void main() {
     test("Get category", () async {
       var result = await database.getCategory('1');
       var expected = {
+        "category_id": '1',
         "user_id": "1",
         "title": "Get me ",
         "creation_date": '2022-08-11 13:04:00'
@@ -241,13 +255,19 @@ void main() {
 
     test("Edit category title", () async {
       var data = {
-        "user_id": "2",
+        "title": "New title",
+      };
+
+      database.putCategory('3', data);
+      var result = await store.collection('categories').doc('3').get();
+
+      var expectedTitle = {
+        'category_id': '3',
+        "user_id": "3",
         "title": "New title",
         "creation_date": '2022-08-11 13:04:00'
       };
-      database.putCategory('3', data);
-      var result = await store.collection('categories').doc('3').get();
-      expect(data, result);
+      expect(result, expectedTitle);
     });
 
   });
@@ -257,6 +277,7 @@ void main() {
     test("Get task", () async {
       var result = await database.getTask('1');
       var expected = {
+        'task_id': '1',
         'user_id': '1',
         'title': 'Get me',
         'creation_date': '2022-08-11 13:04:00',
@@ -328,6 +349,7 @@ void main() {
 
     test("Add full task", () async {
       var data = {
+        'task_id': '10',
         'user_id': '2',
         'title': 'Task with all fields',
         'creation_date': '2022-08-11 13:04:00',
@@ -343,84 +365,118 @@ void main() {
 
     test("Update task's title", () async {
       var data = {
+        'title': 'Update title',
+      };
+
+      database.putTask('4', data);
+      var result = await store.collection("tasks").doc('4').get();
+
+      var expectedTask = {
+        'task_id': '4',
         'user_id': '2',
         'title': 'Update title',
         'creation_date': '2022-08-11 13:04:00',
         'completed': 0,
       };
-      database.putTask('4', data);
-      var result = await store.collection("tasks").doc('4').get();
-      expect(result, data);
+      expect(result, expectedTask);
     });
 
     test("Update task's date", () async {
       var data = {
+        'date': '2022-08-12 13:04:00',
+      };
+
+      database.putTask('5', data);
+      var result = await store.collection("tasks").doc('5').get();
+
+      var expectedTask = {
+        'task_id': '5',
         'user_id': '2',
         'title': 'Update date',
         'creation_date': '2022-08-11 13:04:00',
         'completed': 0,
         'date': '2022-08-12 13:04:00',
       };
-      database.putTask('5', data);
-      var result = await store.collection("tasks").doc('5').get();
-      expect(result, data);
+      expect(result, expectedTask);
     });
 
     test("Update task's category", () async {
       var data = {
+        'category_id': '2'
+      };
+
+      database.putTask('6', data);
+      var result = await store.collection("tasks").doc('6').get();
+
+      var expectedTask = {
+        'task_id': '6',
         'user_id': '2',
         'title': 'Update category',
         'creation_date': '2022-08-11 13:04:00',
         'completed': 0,
         'category_id': '2'
       };
-      database.putTask('6', data);
-      var result = await store.collection("tasks").doc('6').get();
-      expect(result, data);
+      expect(result, expectedTask);
     });
 
     test("Update task's emailed", () async {
       var data = {
+        'emailed': 0
+      };
+
+      database.putTask('7', data);
+      var result = await store.collection("tasks").doc('7').get();
+
+      var expectedTask = {
+        'task_id': '7',
         'user_id': '2',
         'title': 'Update emailed',
         'creation_date': '2022-08-11 13:04:00',
         'completed': 0,
         'emailed': 0
       };
-      database.putTask('7', data);
-      var result = await store.collection("tasks").doc('7').get();
-      expect(result, data);
+      expect(result, expectedTask);
     });
 
     test("Update task's repeating", () async {
       var data = {
+        'repeating': 123
+      };
+      database.putTask('8', data);
+      var result = await store.collection("tasks").doc('8').get();
+
+      var expectedTask = {
+        'task_id': '8',
         'user_id': '2',
         'title': 'Update repeating',
         'creation_date': '2022-08-11 13:04:00',
         'completed': 0,
         'repeating': 123
       };
-      database.putTask('8', data);
-      var result = await store.collection("tasks").doc('8').get();
-      expect(result, data);
+      expect(result, expectedTask);
     });
 
     test("Update task's completed", () async {
       var data = {
+        'completed': 0,
+      };
+
+      database.putTask('9', data);
+      var result = await store.collection("tasks").doc('9').get();
+
+      var expectedTask = {
+        'task_id': '9',
         'user_id': '2',
         'title': 'Update completed',
         'creation_date': '2022-08-11 13:04:00',
         'completed': 0,
       };
-      database.putTask('9', data);
-      var result = await store.collection("tasks").doc('9').get();
-      expect(result, data);
+      expect(result, expectedTask);
     });
 
   });
 
   group('Config data tests', () {
-
 
     test('Get config', () async {
       var res = await database.getConfig();
@@ -430,7 +486,6 @@ void main() {
       };
       expect(res.data, expected);
     });
-
 
     test("Update config's user id", () async {
       var newData = {
