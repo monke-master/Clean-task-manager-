@@ -33,4 +33,6 @@ class Controller {
       }
     }
   }
+
+  void signUp() {}
 }
