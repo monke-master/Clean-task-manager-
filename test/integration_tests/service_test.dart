@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+
 import 'package:localstore/localstore.dart';
+import 'package:task_manager_arch/models/category.dart';
 import 'package:task_manager_arch/models/data_response.dart';
 import 'package:task_manager_arch/repository/local_database.dart';
 import 'package:task_manager_arch/service/service.dart';
@@ -12,6 +15,7 @@ import 'package:task_manager_arch/models/user.dart';
 import 'package:task_manager_arch/repository/api.dart';
 import 'package:task_manager_arch/repository/in_memory_cache.dart';
 
+@TestOn("android")
 Future<void> main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
@@ -92,14 +96,14 @@ Future<void> main() async {
           'user_id': 'guest',
           'title': 'Get me',
           'creation_date': '2022-08-11 13:04:00',
-          'completed': '0'
+          'completed': '0',
         }
       };
       var expectedCategories = {
         '1': {
           "user_id": "guest",
           "title": "Get me ",
-          "creation_date": '2022-08-11 13:04:00'
+          "creation_date": '2022-08-11 13:04:00',
         }
       };
 
@@ -271,7 +275,7 @@ Future<void> main() async {
 
     tearDownAll(() async {
       cache.deleteUser();
-      await localDatabase.deleteConfig();
+      var res = await localDatabase.deleteConfig();
       for (int id = 0; id < 15; id++) {
         await localDatabase.deleteCategory('$id');
         await localDatabase.deleteTask('$id');
@@ -283,7 +287,7 @@ Future<void> main() async {
 
       for (String id in ids) {
         await localDatabase.deleteUser(id);
-        await api.deleteUser('$id');
+        await api.deleteUser(id);
       }
     });
   });
@@ -319,18 +323,13 @@ Future<void> main() async {
     });
 
     test("Update user's email test", () async {
-      User oldUser = User(
-          id: '1',
-          email: "email@mail.ru",
-          password: "strong_pass",
-          registrationDate: DateTime.parse('2022-08-11 13:04:00'));
       User newUser = User(
           id: '1',
           email: "new.email@mail.ru",
           password: "strong_pass",
           registrationDate: DateTime.parse('2022-08-11 13:04:00'));
 
-      var res = await service.updateUser(oldUser, newUser);
+      var res = await service.updateUser(newUser);
       var localDBRes = await localDatabase.getUser('1');
       var cacheRes = cache.getUser();
       var apiRes = await api.getUser('1');
@@ -349,18 +348,13 @@ Future<void> main() async {
     });
 
     test("Update user's password test", () async {
-      User oldUser = User(
-          id: '1',
-          email: "email@mail.ru",
-          password: "strong_pass",
-          registrationDate: DateTime.parse('2022-08-11 13:04:00'));
       User newUser = User(
           id: '1',
           email: "email@mail.ru",
           password: "mega_strong_password",
           registrationDate: DateTime.parse('2022-08-11 13:04:00'));
 
-      var res = await service.updateUser(oldUser, newUser);
+      var res = await service.updateUser(newUser);
       var localDBRes = await localDatabase.getUser('1');
       var cacheRes = cache.getUser();
       var apiRes = await api.getUser('1');
@@ -378,12 +372,7 @@ Future<void> main() async {
     });
 
     test("Delete user", () async {
-      User user = User(
-          id: '1',
-          email: "email@mail.ru",
-          password: "strong_pass",
-          registrationDate: DateTime.parse('2022-08-11 13:04:00'));
-      var deleteResponse = await service.deleteUser(user);
+      var deleteResponse = await service.deleteUser();
 
       var localeUserRes = await localDatabase.getUser('1');
       var localeConfigRes = await localDatabase.getConfig();
@@ -405,14 +394,11 @@ Future<void> main() async {
     tearDown(() async {
       cache.deleteUser();
       await localDatabase.deleteConfig();
-      await localDatabase.deleteUser('guest');
+      await localDatabase.deleteUser('1');
+      await api.deleteUser('1');
       for (int id = 0; id < 15; id++) {
-        await localDatabase.deleteCategory('$id');
-        await localDatabase.deleteTask('$id');
         cache.deleteTask('$id');
         cache.deleteCategory('$id');
-        await api.deleteTask('$id');
-        await api.deleteCategory('$id');
       }
     });
   });
@@ -454,18 +440,13 @@ Future<void> main() async {
     });
 
     test("Update user's password", () async {
-      User oldUser = User(
-          id: '1',
-          email: "email@mail.ru",
-          password: "wrong_pass",
-          registrationDate: DateTime.parse('2022-08-11 13:04:00'));
       User newUser = User(
           id: '1',
           email: "email@mail.ru",
           password: "strong_pass",
           registrationDate: DateTime.parse('2022-08-11 13:04:00'));
 
-      var apiResponse = await service.updateUser(oldUser, newUser);
+      var apiResponse = await service.updateUser(newUser);
       var ldbResponse = await localDatabase.getUser('1');
       var apiGetResponse = await api.getUser('1');
 
@@ -491,18 +472,13 @@ Future<void> main() async {
     });
 
     test("Update user's email", () async {
-      User oldUser = User(
-          id: '1',
-          email: "email@mail.ru",
-          password: "wrong_pass",
-          registrationDate: DateTime.parse('2022-08-11 13:04:00'));
       User newUser = User(
           id: '1',
           email: "new_email@mail.ru",
           password: "wrong_pass",
           registrationDate: DateTime.parse('2022-08-11 13:04:00'));
 
-      var apiResponse = await service.updateUser(oldUser, newUser);
+      var apiResponse = await service.updateUser(newUser);
       var ldbResponse = await localDatabase.getUser('1');
       var apiGetResponse = await api.getUser('1');
 
@@ -528,13 +504,7 @@ Future<void> main() async {
     });
 
     test("Delete user", () async {
-      User user = User(
-          id: '1',
-          email: "email@mail.ru",
-          password: "wrong_pass",
-          registrationDate: DateTime.parse('2022-08-11 13:04:00'));
-
-      var response = await service.deleteUser(user);
+      var response = await service.deleteUser();
       var ldbResponse = await localDatabase.getUser('1');
       var apiGetResponse = await api.getUser('1');
 
@@ -563,14 +533,11 @@ Future<void> main() async {
       cache.deleteUser();
       await localDatabase.deleteConfig();
       await localDatabase.deleteUser('1');
+      await api.deleteUser('1');
       for (int id = 0; id < 15; id++) {
         await localDatabase.deleteUser('$id');
-        await localDatabase.deleteCategory('$id');
-        await localDatabase.deleteTask('$id');
         cache.deleteTask('$id');
         cache.deleteCategory('$id');
-        await api.deleteTask('$id');
-        await api.deleteCategory('$id');
       }
     });
   });
@@ -578,7 +545,7 @@ Future<void> main() async {
   group("Guest user CRUD tests", () {
     Service service = Service(cache, api, localDatabase);
 
-    setUp(() async {
+    setUpAll(() async {
       var localUserData = {
         'id': "guest"
       };
@@ -604,40 +571,26 @@ Future<void> main() async {
     });
 
     test("Delete user", () async {
-      User user = User(
-          id: 'guest',
-          email: null,
-          password: null,
-          registrationDate: null);
+      var response = await service.deleteUser();
 
-      var response = await service.deleteUser(user);
-      var ldbResponse = await localDatabase.getUser('guest');
+      Timer(const Duration(seconds: 1), expectAsync0(() async {
+        var ldbResponse = await localDatabase.getUser('guest');
+        var configResponse = await localDatabase.getConfig();
 
-      var expectedUserData = {
-        'id': 'guest',
-      };
-      expect(response.statusCode, 200);
-      expect(cache.getUser(), expectedUserData);
-      expect(ldbResponse.data, expectedUserData);
+        var expectedConfig = {
+          'user_id': 'guest',
+        };
+        expect(response.statusCode, 200);
+        expect(cache.getUser(), {});
+        expect(ldbResponse.statusCode, 404);
+        expect(configResponse.data, expectedConfig);
+      }, count: 1));
+
     });
 
-    tearDown(() async {
-      cache.deleteUser();
-      await localDatabase.deleteConfig();
-      await localDatabase.deleteUser('guest');
-      for (int id = 0; id < 15; id++) {
-        await localDatabase.deleteUser('$id');
-        await localDatabase.deleteCategory('$id');
-        await localDatabase.deleteTask('$id');
-        cache.deleteTask('$id');
-        cache.deleteCategory('$id');
-        await api.deleteTask('$id');
-        await api.deleteCategory('$id');
-      }
-    });
   });
 
-  group("Category CRUD tests", () {
+  group("Authenticated user's Category CRUD tests", () {
     Service service = Service(cache, api, localDatabase);
 
     setUp(() async {
@@ -655,7 +608,300 @@ Future<void> main() async {
       await localDatabase.putUser("1", userData);
       await api.addUser('1', userData);
 
+      var category0 = {
+        'title': 'Delete me',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+      var category1 = {
+        'title': 'Get me',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+      var category2 = {
+        'title': 'Update me',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+
+      await localDatabase.putCategory('0', category0);
+      await api.addCategory('0', category0);
+      await localDatabase.putCategory('1', category1);
+      await api.addCategory('1', category1);
+      await localDatabase.putCategory('2', category2);
+      await api.addCategory('2', category2);
+
+
+
       await service.initialize();
+    });
+
+    test("Get category", () async {
+      Category result = service.getCategory('1')!;
+
+      Category expectedCategory = Category(
+          categoryId: '1',
+          userId: '1',
+          title: 'Get me',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+      expect(result, expectedCategory);
+    });
+
+    test("Get categories list", () async {
+      List<Category> result = service.getCategoriesList();
+
+      Category category0 = Category(
+          categoryId: '0',
+          userId: '1',
+          title: 'Delete me',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+      Category category1 = Category(
+          categoryId: '1',
+          userId: '1',
+          title: 'Get me',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+      Category category2 = Category(
+          categoryId: '2',
+          userId: '1',
+          title: 'Update me',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+      expect(result, [category0, category1, category2]);
+    });
+
+    test("Add category", () async {
+      Category newCategory = Category(
+          categoryId: '3',
+          userId: '1',
+          title: 'New category',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+
+      var serviceResponse = await service.addCategory(newCategory);
+      var cacheResult = cache.getCategory('3');
+      var ldbResult = await localDatabase.getCategory('3');
+      var apiResult = await api.getCategory('3');
+
+      var expectedCategory = {
+        'category_id': '3',
+        'title': 'New category',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00.000'
+      };
+
+      expect(serviceResponse.statusCode, 200);
+      expect(cacheResult, expectedCategory);
+      expect(ldbResult.data, expectedCategory);
+      expect(apiResult.data, expectedCategory);
+    });
+
+    test("Update category", () async {
+      Category newCategory = Category(
+          categoryId: '2',
+          userId: '1',
+          title: 'New title',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+
+      var serviceResponse = await service.updateCategory(newCategory);
+      var cacheResult = cache.getCategory('2');
+      var ldbResult = await localDatabase.getCategory('2');
+      var apiResult = await api.getCategory('2');
+
+      var expectedCategory = {
+        'category_id': '2',
+        'title': 'New title',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+
+      expect(serviceResponse.statusCode, 200);
+      expect(cacheResult, expectedCategory);
+      expect(ldbResult.data, expectedCategory);
+      expect(apiResult.data, expectedCategory);
+    });
+
+    test("Delete category", () async {
+      var serviceResponse = await service.deleteCategory('0');
+
+      var cacheResponse = cache.getCategory('0');
+      var ldbResponse = await localDatabase.getCategory('0');
+      var apiResponse = await api.getCategory('0');
+
+      expect(serviceResponse.statusCode, 200);
+      expect(cacheResponse, null);
+      expect(ldbResponse.statusCode, 404);
+      expect(apiResponse.statusCode, 404);
+    });
+
+    tearDown(() async {
+      cache.deleteUser();
+      await localDatabase.deleteConfig();
+      await localDatabase.deleteUser('1');
+      for (int id = 0; id < 15; id++) {
+        await localDatabase.deleteUser('$id');
+        await localDatabase.deleteCategory('$id');
+        await localDatabase.deleteTask('$id');
+        cache.deleteTask('$id');
+        cache.deleteCategory('$id');
+        await api.deleteCategory('$id');
+        await api.deleteTask('$id');
+      }
+    });
+  });
+
+  group("Wrong-authenticated user's Category CRUD tests", () {
+    Service service = Service(cache, api, localDatabase);
+
+    setUp(() async {
+      var localUserData = {
+        "email": "email@mail.ru",
+        'password': "wrong_pass",
+        'registration_date': '2022-08-11 13:04:00'
+      };
+      var webUserData = {
+        "email": "email@mail.ru",
+        'password': "strong_pass",
+        'registration_date': '2022-08-11 13:04:00'
+      };
+      await localDatabase.putConfig({
+        "user_id": '1',
+        'theme': 'dart',
+        'language': "en_US",
+        'notify_about_sign_up': false
+      });
+      await localDatabase.putUser("1", localUserData);
+      await api.addUser('1', webUserData);
+
+      var category0 = {
+        'title': 'Delete me',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+      var category1 = {
+        'title': 'Get me',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+      var category2 = {
+        'title': 'Update me',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+
+      await localDatabase.putCategory('0', category0);
+      await api.addCategory('0', category0);
+      await localDatabase.putCategory('1', category1);
+      await api.addCategory('1', category1);
+      await localDatabase.putCategory('2', category2);
+      await api.addCategory('2', category2);
+
+      await service.initialize();
+    });
+
+    test("Get category", () async {
+      Category result = service.getCategory('1')!;
+
+      Category expectedCategory = Category(
+          categoryId: '1',
+          userId: '1',
+          title: 'Get me',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+      expect(result, expectedCategory);
+    });
+
+    test("Get categories list", () async {
+      List<Category> result = service.getCategoriesList();
+
+      Category category0 = Category(
+          categoryId: '0',
+          userId: '1',
+          title: 'Delete me',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+      Category category1 = Category(
+          categoryId: '1',
+          userId: '1',
+          title: 'Get me',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+      Category category2 = Category(
+          categoryId: '2',
+          userId: '1',
+          title: 'Update me',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+      expect(result, [category0, category1, category2]);
+    });
+
+    test("Add category", () async {
+      Category newCategory = Category(
+          categoryId: '3',
+          userId: '1',
+          title: 'New category',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+
+      var serviceResponse = await service.addCategory(newCategory);
+      var cacheResult = cache.getCategory('3');
+      var ldbResult = await localDatabase.getCategory('3');
+      var apiResult = await api.getCategory('3');
+
+      expect(serviceResponse.statusCode, 401);
+      expect(cacheResult, null);
+      expect(ldbResult.statusCode, 404);
+      expect(apiResult.statusCode, 404);
+    });
+
+    test("Update category", () async {
+      Category newCategory = Category(
+          categoryId: '2',
+          userId: '1',
+          title: 'New title',
+          creationDate: DateTime.parse('2022-08-11 13:04:00'));
+
+      var serviceResponse = await service.updateCategory(newCategory);
+      var cacheResult = cache.getCategory('2');
+      var ldbResult = await localDatabase.getCategory('2');
+      var apiResult = await api.getCategory('2');
+
+      var expectedCategory = {
+        'category_id': '2',
+        'title': 'Update me',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+      expect(serviceResponse.statusCode, 401);
+      expect(cacheResult, expectedCategory);
+      expect(ldbResult.data, expectedCategory);
+      expect(apiResult.data, expectedCategory);
+    });
+
+    test("Delete category", () async {
+      var serviceResponse = await service.deleteCategory('0');
+
+      var cacheResponse = cache.getCategory('0');
+      var ldbResponse = await localDatabase.getCategory('0');
+      var apiResponse = await api.getCategory('0');
+
+      var expectedCategory = {
+        'category_id': '0',
+        'title': 'Delete me',
+        'user_id': '1',
+        'creation_date': '2022-08-11 13:04:00'
+      };
+      expect(serviceResponse.statusCode, 401);
+      expect(cacheResponse, expectedCategory);
+      expect(ldbResponse.data, expectedCategory);
+      expect(apiResponse.data, expectedCategory);
+    });
+
+    tearDown(() async {
+      cache.deleteUser();
+      await localDatabase.deleteConfig();
+      await localDatabase.deleteUser('1');
+      for (int id = 0; id < 15; id++) {
+        await localDatabase.deleteUser('$id');
+        await localDatabase.deleteCategory('$id');
+        await localDatabase.deleteTask('$id');
+        cache.deleteTask('$id');
+        cache.deleteCategory('$id');
+        await api.deleteCategory('$id');
+        await api.deleteTask('$id');
+      }
     });
 
 

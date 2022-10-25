@@ -1,10 +1,5 @@
-
-import 'dart:developer';
-import 'dart:io';
-import 'dart:ui';
-
-import 'package:http/http.dart';
 import 'package:task_manager_arch/models/category.dart';
+import 'package:task_manager_arch/models/configuration.dart';
 import 'package:task_manager_arch/models/data_response.dart';
 import 'package:task_manager_arch/models/user.dart';
 import 'package:task_manager_arch/repository/api.dart';
@@ -15,54 +10,26 @@ import '../models/task.dart';
 
 class Service {
 
-  bool _sync = false;
-
   final InMemoryCache _cacheRepo;
   final Api _apiRepo;
   final LocalDatabase _localRepo;
 
   Service(this._cacheRepo, this._apiRepo, this._localRepo);
 
-  // Инициализация сервиса
-  Future<void> initialize() async {
-    // Проверка наличия активного пользователя на устройстве
-    DataResponse config = await _localRepo.getConfig();
-    String userId;
-
-    // Если на устройстве нет авторизированного пользователя,
-    if (config.statusCode == 404) { // то создаем гостевую учетную запись
-      await _localRepo.putConfig({
-        'user_id': 'guest',
-        'theme': 'system',
-        'language': Platform.localeName,
-        'notify_about_sign_up': true
-      });
-      userId = "guest";
-      await _localRepo.putUser(userId, {});
-      _sync = false;
-
-    } else { // иначе получаем данные для входа
-      userId = config.data['user_id'];
-      _sync = userId != 'guest';
-    }
-
-    // Копирование данных из локального хранилища в кэш
+  // Копирование данных из локального хранилища в кэш
+  Future<void> syncFromLocalToCache(String userId) async {
     DataResponse getUser = await _localRepo.getUser(userId);
     if (getUser.statusCode == 200) {
       _cacheRepo.addUser(userId, getUser.data);
 
-      DataResponse getCategories = await _localRepo.getCategoriesList(userId);
-      if (getCategories.statusCode == 200) {
-        for (String categoryId in getCategories.data.keys) {
-          _cacheRepo.addCategory(categoryId, getCategories.data[categoryId]);
-        }
+      Map<String, dynamic> getCategories = await _localRepo.getCategoriesList(userId);
+      for (String categoryId in getCategories.keys) {
+        _cacheRepo.addCategory(categoryId, getCategories[categoryId]);
       }
 
-      DataResponse getTasks = await _localRepo.getUserTasks(userId);
-      if (getTasks.statusCode == 200) {
-        for (String taskId in getTasks.data.keys) {
-          _cacheRepo.addTask(taskId, getTasks.data[taskId]);
-        }
+      Map<String, dynamic> getTasks = await _localRepo.getUserTasks(userId);
+      for (String taskId in getTasks.keys) {
+        _cacheRepo.addTask(taskId, getTasks[taskId]);
       }
     }
   }
@@ -100,9 +67,9 @@ class Service {
      await _localRepo.putUser(userId, userJson);
 
       // Редактируем конфигурацию
-      DataResponse config = await _localRepo.getConfig();
-      config.data['user_id'] = userId;
-      await _localRepo.putConfig(config.data);
+      Map<String, dynamic> config = (await _localRepo.getConfig())!;
+      config['user_id'] = userId;
+      await _localRepo.putConfig(config);
 
       // Редактируем id создателя категории
       Map<String, dynamic> categories = _cacheRepo.getCategoriesList();
@@ -130,7 +97,86 @@ class Service {
     }
   }
 
-  // Загрузка данных с устройства на сервер
+  // Проверка необходимости синхронизации
+  Future<void> checkForSync() async {
+    Map<String, dynamic>? errorsList = await _localRepo.getErrorsList();
+    if (errorsList.isEmpty) {
+      return;
+    }
+
+    for (String errorId in errorsList.keys) {
+      Map<String, dynamic> error = errorsList[errorId];
+      switch (error['type']) {
+        case 'put':
+          switch (error['collection']) {
+            case 'categories':
+              Map<String, dynamic> categoryData = error['data'];
+              DataResponse apiResponse = await _apiRepo.addCategory(
+                  categoryData['category_id'], categoryData);
+              if (apiResponse.statusCode != 200) {
+                return;
+              }
+              await _localRepo.deleteError(errorId);
+              break;
+            case 'tasks':
+              Map<String, dynamic> taskData = error['data'];
+              DataResponse apiResponse = await _apiRepo.addTask(
+                  taskData['task_id'], taskData);
+              if (apiResponse.statusCode != 200) {
+                return;
+              }
+              await _localRepo.deleteError(errorId);
+              break;
+          }
+          break;
+        case 'post':
+          switch (error['collection']) {
+            case 'categories':
+              Map<String, dynamic> categoryData = error['data'];
+              DataResponse apiResponse = await _apiRepo.updateCategory(
+                  categoryData['category_id'], categoryData);
+              if (apiResponse.statusCode != 200) {
+                return;
+              }
+              await _localRepo.deleteError(errorId);
+              break;
+            case 'tasks':
+              Map<String, dynamic> taskData = error['data'];
+              DataResponse apiResponse = await _apiRepo.updateTask(
+                  taskData['task_id'], taskData);
+              if (apiResponse.statusCode != 200) {
+                return;
+              }
+              await _localRepo.deleteError(errorId);
+              break;
+          }
+          break;
+        case 'delete':
+          switch (error['collection']) {
+            case 'categories':
+              Map<String, dynamic> categoryData = error['data'];
+              DataResponse apiResponse =
+                await _apiRepo.deleteCategory(categoryData['category_id']);
+              if (apiResponse.statusCode != 200) {
+                return;
+              }
+              await _localRepo.deleteError(errorId);
+              break;
+            case 'tasks':
+              Map<String, dynamic> taskData = error['data'];
+              DataResponse apiResponse =
+                await _apiRepo.deleteTask(taskData['task_id']);
+              if (apiResponse.statusCode != 200) {
+                return;
+              }
+              await _localRepo.deleteError(errorId);
+              break;
+          }
+      }
+    }
+  }
+
+  // Загрузка всех данных с устройства на сервер
   Future<DataResponse> syncFromLocalToServer() async {
     Map<String, dynamic> categories = _cacheRepo.getCategoriesList();
     Map<String, dynamic> tasks = _cacheRepo.getUserTasks();
@@ -169,38 +215,52 @@ class Service {
     return user;
   }
 
+  // Получение пользователя из локального хранилища
+  Future<User?> getUserFromLocal(String userId) async {
+    DataResponse ldbResponse = await _localRepo.getUser(userId);
+    if (ldbResponse.statusCode == 404) {
+      return null;
+    }
+    Map<String, dynamic> userJson = ldbResponse.data;
+    User user = User(
+        id: userJson['id'],
+        email: userJson['email'],
+        password: userJson['password'],
+        registrationDate: userJson['registrationDate']);
+    return user;
+  }
+
   // Редактирование данных пользователя
-  Future<DataResponse> updateUser(User oldUser, User newUser) async {
+  Future<DataResponse> updateUser(User newUser) async {
     // Каст в Json
     Map<String, dynamic> newUserJson = {
       'email': newUser.email,
       'password': newUser.password,
     };
 
-    DataResponse authResponse = await authenticate(oldUser);
-    if (authResponse.statusCode == 200) {
+    // Вносим локальные изменения только при успешном ответе сервера
+    DataResponse apiResponse = await _apiRepo.updateUser(
+        newUser.id,
+        newUserJson);
+    if (apiResponse.statusCode == 200) {
       _cacheRepo.updateUser(newUserJson);
-      _localRepo.putUser(oldUser.id, newUserJson);
-      DataResponse apiResponse = await _apiRepo.updateUser(
-          newUser.id,
-          newUserJson);
-      return apiResponse;
-    } else {
-      return authResponse;
+      _localRepo.putUser(newUser.id, newUserJson);
     }
+
+    return apiResponse;
   }
 
   // Удаление пользователя
-  Future<DataResponse> deleteUser(User user) async {
+  Future<DataResponse> deleteUser(bool sync) async {
     String userId = _cacheRepo.getUser()['id'];
     // Удаление данных с сервера (при наличии учетной записи)
-    if (_sync) {
-      DataResponse authResponse = await authenticate(user);
-      if (authResponse.statusCode == 200) {
+    if (sync) {
+      DataResponse apiResponse = await _apiRepo.deleteUser(userId);
+      // Вносим локальные изменения только при успешном ответе сервера
+      if (apiResponse.statusCode == 200) {
         _deleteUserLocally(userId);
-        return await _apiRepo.deleteUser(userId);
       }
-      return authResponse;
+      return apiResponse;
     } else {
       _deleteUserLocally(userId);
       return DataResponse(data: {"body": "Success"}, statusCode: 200);
@@ -216,14 +276,17 @@ class Service {
 
   // Методы для работы с категориями
   // Получение категории
-  Category getCategory(String categoryId) {
-    Map<String, dynamic>  categoryJson = _cacheRepo.getCategory(categoryId);
-    Category category = Category(
-        categoryId: categoryId,
-        userId: categoryJson['userId'],
-        title: categoryJson['title'],
-        creationDate: categoryJson['creation_date']);
-    return category;
+  Category? getCategory(String categoryId) {
+    Map<String, dynamic>?  categoryJson = _cacheRepo.getCategory(categoryId);
+    if (categoryJson != null) {
+      Category category = Category(
+          categoryId: categoryId,
+          userId: categoryJson['user_id'],
+          title: categoryJson['title'],
+          creationDate: DateTime.parse(categoryJson['creation_date']));
+      return category;
+    }
+    return null;
   }
 
   // Получение списка категорий
@@ -234,29 +297,25 @@ class Service {
       Map<String, dynamic>  categoryJson = categoriesJson[categoryId];
       Category category = Category(
           categoryId: categoryId,
-          userId: categoryJson['userId'],
+          userId: categoryJson['user_id'],
           title: categoryJson['title'],
-          creationDate: categoryJson['creation_date']);
+          creationDate: DateTime.parse(categoryJson['creation_date']));
       categories.add(category);
     }
     return categories;
   }
 
   // Добавление категории
-  Future<DataResponse> addCategory(User user, Category category) async {
+  Future<DataResponse> addCategory(Category category, bool sync) async {
     Map<String, dynamic>  categoryJson = {
       'user_id': category.userId,
       'title': category.title,
-      'creation_date': category.creationDate,
+      'creation_date': category.creationDate.toString(),
     };
 
-    if (_sync) {
-      DataResponse authResponse = await authenticate(user);
-      if (authResponse.statusCode == 200) {
-        _addCategoryLocally(category.categoryId, categoryJson);
-        return await _apiRepo.addCategory(category.categoryId, categoryJson);
-      }
-      return authResponse;
+    _addCategoryLocally(category.categoryId, categoryJson);
+    if (sync) {
+      return await _apiRepo.addCategory(category.categoryId, categoryJson);
     } else {
       return DataResponse(data: {"body": "Success"}, statusCode: 200);
     }
@@ -269,22 +328,17 @@ class Service {
   }
 
   // Редактирование категории
-  Future<DataResponse> updateCategory(User user, Category newCategory) async {
+  Future<DataResponse> updateCategory(Category newCategory, bool sync) async {
      Map<String, dynamic> newCategoryJson = {
        'title': newCategory.title
      };
 
-     if (_sync) {
-       DataResponse authResponse = await authenticate(user);
-       if (authResponse.statusCode == 200) {
-         _updateCategoryLocally(newCategory.categoryId, newCategoryJson);
-         return await _apiRepo.updateCategory(
-             newCategory.categoryId,
-             newCategoryJson);
-       }
-       return authResponse;
+    _updateCategoryLocally(newCategory.categoryId, newCategoryJson);
+     if (sync) {
+       return await _apiRepo.updateCategory(
+           newCategory.categoryId,
+           newCategoryJson);
      } else {
-       _updateCategoryLocally(newCategory.categoryId, newCategoryJson);
        return DataResponse(data: {"body": "Success"}, statusCode: 200);
      }
 
@@ -299,16 +353,11 @@ class Service {
   }
 
    // Удаление категории
-  Future<DataResponse> deleteCategory(User user, String categoryId) async {
-     if (_sync) {
-       DataResponse authResponse = await authenticate(user);
-       if (authResponse.statusCode == 200) {
-         _deleteCategoryLocally(categoryId);
-         return await _apiRepo.deleteCategory(categoryId);
-       }
-       return authResponse;
+  Future<DataResponse> deleteCategory(String categoryId, bool sync) async {
+    _deleteCategoryLocally(categoryId);
+     if (sync) {
+       return await _apiRepo.deleteCategory(categoryId);
      } else {
-       _deleteCategoryLocally(categoryId);
        return DataResponse(data: {"body": "Success"}, statusCode: 200);
      }
   }
@@ -322,51 +371,24 @@ class Service {
 
   // Методы для работы с задачами
   // Получение задачи
-  Task getTask(String taskId) {
-     Map<String, dynamic> taskJson = _cacheRepo.getTask(taskId);
-     Task task = Task(
-         taskId: taskId,
-         userId: taskJson['user_id'],
-         categoryId: taskJson['category_id'],
-         title: taskJson['title'],
-         date: taskJson['date'],
-         creationDate: taskJson['creation_date'],
-         completed: taskJson['completed'],
-         emailed: taskJson['emailed'],
-         repeating: taskJson['repeating']);
-     return task;
-  }
-
-  // Добавление задачи
-  Future<DataResponse> addTask(User user, Task task) async {
-    Map<String, dynamic> taskJson = {
-      'user_id': task.userId,
-      'category_id': task.categoryId,
-      'title': task.title,
-      'date': task.date,
-      'completed': task.completed,
-      'emailed': task.emailed,
-      'creation_date': task.creationDate,
-      'repeating': task.repeating
-    };
-
-    if (_sync) {
-      DataResponse authResponse = await authenticate(user);
-      if (authResponse.statusCode == 200) {
-        _addTaskLocally(task.taskId, taskJson);
-        return await _apiRepo.addTask(task.taskId, taskJson);
-      }
-      return authResponse;
-    } else {
-      _addTaskLocally(task.taskId, taskJson);
-      return DataResponse(data: {"body": "Success"}, statusCode: 200);
+  Task? getTask(String taskId) {
+     Map<String, dynamic>? taskJson = _cacheRepo.getTask(taskId);
+     if (taskJson != null) {
+      Task task = Task(
+          taskId: taskId,
+          userId: taskJson['user_id'],
+          categoryId: taskJson['category_id'],
+          title: taskJson['title'],
+          date: DateTime.parse(taskJson['date']),
+          creationDate: DateTime.parse(taskJson['creation_date']),
+          completed: int.parse(taskJson['completed']) == 1 ? true : false,
+          emailed: taskJson['emailed'] != null
+              ? (int.parse(taskJson['emailed']) == 1 ? true : false)
+              : null,
+          repeating: int.parse(taskJson['repeating']));
+      return task;
     }
-  }
-
-  // Добавление задачи в кэш и память устройства
-  Future<void> _addTaskLocally(String taskId, Map<String, dynamic> taskJson) async {
-    _cacheRepo.addTask(taskId, taskJson);
-    _localRepo.putTask(taskId, taskJson);
+     return null;
   }
 
   // Получение всех задач указанной категории
@@ -411,8 +433,36 @@ class Service {
     return tasks;
   }
 
+  // Добавление задачи
+  Future<DataResponse> addTask(Task task, bool sync) async {
+    User user = getUser();
+    Map<String, dynamic> taskJson = {
+      'user_id': task.userId,
+      'category_id': task.categoryId,
+      'title': task.title,
+      'date': task.date.toString(),
+      'completed': task.completed ? 1 : 0,
+      'emailed': task.emailed != null ? (task.emailed! ? 1 : 0) : null,
+      'creation_date': task.creationDate.toString(),
+      'repeating': task.repeating.toString()
+    };
+
+    _addTaskLocally(task.taskId, taskJson);
+    if (sync) {
+      return await _apiRepo.addTask(task.taskId, taskJson);
+    } else {
+      return DataResponse(data: {"body": "Success"}, statusCode: 200);
+    }
+  }
+
+  // Добавление задачи в кэш и память устройства
+  Future<void> _addTaskLocally(String taskId, Map<String, dynamic> taskJson) async {
+    _cacheRepo.addTask(taskId, taskJson);
+    _localRepo.putTask(taskId, taskJson);
+  }
+
   // Редактирование задачи
-  Future<DataResponse> updateTask(User user, Task newTask) async {
+  Future<DataResponse> updateTask(Task newTask, bool sync) async {
     Map<String, dynamic> newTaskJson = {
       'category_id': newTask.categoryId,
       'title': newTask.title,
@@ -422,15 +472,10 @@ class Service {
       'repeating': newTask.repeating
     };
 
-    if (_sync) {
-      DataResponse authResponse = await authenticate(user);
-      if (authResponse.statusCode == 200) {
-        _updateTaskLocally(newTask.taskId, newTaskJson);
-        return await _apiRepo.updateTask(newTask.taskId, newTaskJson);
-      }
-      return authResponse;
+    _updateTaskLocally(newTask.taskId, newTaskJson);
+    if (sync) {
+      return await _apiRepo.updateTask(newTask.taskId, newTaskJson);
     } else {
-      _updateTaskLocally(newTask.taskId, newTaskJson);
       return DataResponse(data: {"body": "Success"}, statusCode: 200);
     }
 
@@ -443,17 +488,12 @@ class Service {
   }
 
   // Удаление задачи
-  Future<DataResponse> deleteTask(User user, String taskId) async {
-    if (_sync) {
-      DataResponse authResponse = await authenticate(user);
-      if (authResponse.statusCode == 200) {
-        _deleteTaskLocally(taskId);
-        return await _apiRepo.deleteTask(taskId);
-      }
-      return authResponse;
+  Future<DataResponse> deleteTask(String taskId, bool sync) async {
+    _deleteTaskLocally(taskId);
+    if (sync) {
+      return await _apiRepo.deleteTask(taskId);
     }
     else {
-      _deleteTaskLocally(taskId);
       return DataResponse(data: {"body": "Success"}, statusCode: 200);
     }
   }
@@ -462,6 +502,32 @@ class Service {
   Future<void> _deleteTaskLocally(String taskId) async {
     _cacheRepo.deleteTask(taskId);
     await _localRepo.deleteTask(taskId);
+  }
+
+  // Методы для работы с конфигурацией
+  // Получение конфигурации
+  Future<Configuration?> getConfiguration() async {
+    Map<String, dynamic>? ldbResponse = await _localRepo.getConfig();
+    if (ldbResponse == null) {
+      return null;
+    }
+    Configuration configuration = Configuration(
+        userId: ldbResponse['user_id'],
+        language: ldbResponse['language'],
+        theme: ldbResponse['theme'],
+        notifyAboutSignUp: ldbResponse['notify_about_sign_up']);
+    return configuration;
+  }
+
+  // Установка конфигурации
+  Future<void> setConfiguration(Configuration configuration) async {
+    Map<String, dynamic> configJson = {
+      "user_id": configuration.userId,
+      "theme": configuration.theme,
+      "language": configuration.language,
+      "notify_about_sign_up": configuration.notifyAboutSignUp
+    };
+    await _localRepo.putConfig(configJson);
   }
 
 }

@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 const String base ='http://localhost:8080';
 
+@TestOn("android")
 void main() {
   Api api = Api();
 

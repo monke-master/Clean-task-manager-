@@ -9,7 +9,7 @@ class Task {
   DateTime date;
   DateTime creationDate;
   bool completed;
-  int emailed;
+  bool? emailed;
   int repeating;
 
   Task({required this.taskId, required this.userId, required this.categoryId,

@@ -5,7 +5,6 @@ import 'package:task_manager_arch/repository/local_database.dart';
 Future<void> main() async {
   runApp(const MyApp());
   Localstore store = Localstore.instance;
-  store.collection('user').doc('404').delete();
 }
 
 class MyApp extends StatelessWidget {

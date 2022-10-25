@@ -1,5 +1,4 @@
-import 'package:task_manager_arch/models/data_response.dart';
-
+// Класс для хранения данных в кэше
 class InMemoryCache {
 
   final Map<String, dynamic> _user = {};
@@ -28,10 +27,17 @@ class InMemoryCache {
   // Category methods
   void addCategory(String categoryId, Map<String, dynamic> categoryData) {
     _categories[categoryId] = categoryData;
+
   }
 
-  Map<String, dynamic> getCategory(String categoryId) {
-    return _categories[categoryId]!;
+  Map<String, dynamic>? getCategory(String categoryId) {
+    if (_categories.containsKey(categoryId)) {
+      Map<String, dynamic> category = {};
+      category.addAll(_categories[categoryId]!);
+      category["category_id"] = categoryId;
+      return category;
+    }
+    return null;
   }
 
   Map<String, dynamic> getCategoriesList() {
@@ -53,8 +59,14 @@ class InMemoryCache {
     _tasks[taskId] = taskData;
   }
 
-  Map<String, dynamic> getTask(String taskId) {
-    return _tasks[taskId]!;
+  Map<String, dynamic>? getTask(String taskId) {
+    if (_tasks.containsKey(taskId)) {
+      Map<String, dynamic> task = {};
+      task.addAll(_tasks[taskId]!);
+      task['task_id'] = taskId;
+      return _tasks[taskId]!;
+    }
+    return null;
   }
 
   Map<String, dynamic> getUserTasks() {

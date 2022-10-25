@@ -20,6 +20,11 @@ void main() {
       expect(res, '1');
     });
 
+    test("Error id", () {
+      String res = StringHelper.getId("\\errors\\1");
+      expect(res, '1');
+    });
+
 
   });
 }
