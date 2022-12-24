@@ -1,0 +1,13 @@
+{
+    "welcome": "Welcome to Task manager!",
+    "signUp": "SIGN UP",
+    "haveAccount": "I ALREADY HAVE AN ACCOUNT",
+    "signUpTip": "Sign up to sync your data on any device",
+    "later": "LATER",
+    "registration": "Registration",
+    "email": "Email",
+    "weWillSendCode": "We will send confirmation code to your email address.",
+    "next": "Next",
+    "code": "Code",
+    "sendNewCode": "Send new code:"
+}
