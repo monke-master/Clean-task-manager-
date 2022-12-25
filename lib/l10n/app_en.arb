@@ -1,13 +1,32 @@
 {
     "welcome": "Welcome to Task manager!",
-    "signUp": "SIGN UP",
-    "haveAccount": "I ALREADY HAVE AN ACCOUNT",
+    "signUp": "Sign up",
+    "haveAccount": "I already have an account",
     "signUpTip": "Sign up to sync your data on any device",
-    "later": "LATER",
+    "later": "Later",
+
     "registration": "Registration",
+
     "email": "Email",
+    "incorrectEmail": "Incorrect email format",
     "weWillSendCode": "We will send confirmation code to your email address.",
     "next": "Next",
+
     "code": "Code",
-    "sendNewCode": "Send new code:"
+    "incorrectCode": "Incorrect code",
+    "sendNewCode": "Send new code:",
+
+    "password": "Password",
+    "repeatPassword": "Repeat password",
+    "passwordLengthError": "Password's length must be from 8 to 32 symbols",
+    "atLeastOneLetter": "Password must contain at least one latin letter",
+    "incorrectPasswordFormat": "Only numbers, latin alphabet and special characters",
+    "passwordsDontMatch": "Passwords don't match",
+
+    "signIn": "Sign In",
+    "forgotPassword": "Forgot your password?",
+    "passwordRecovery": "Password recovery",
+    "verifyEmailForRecovery": "Enter your email address used for signing up. We will send code to it to make sure it's your accound",
+    "newPassword": "New password",
+    "dontForget": "Don't forget anymore!)"
 }

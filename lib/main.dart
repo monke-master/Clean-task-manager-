@@ -4,8 +4,10 @@ import 'package:localstore/localstore.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:task_manager_arch/view/app_route_builder.dart';
-import 'package:task_manager_arch/view/code_page.dart';
-import 'package:task_manager_arch/view/registration_page.dart';
+import 'package:task_manager_arch/view/registration/code_page.dart';
+import 'package:task_manager_arch/view/registration/email_page.dart';
+import 'package:task_manager_arch/view/registration/password_page.dart';
+import 'package:task_manager_arch/view/sign_in_page.dart';
 import 'package:task_manager_arch/view/start_page.dart';
 
 Future<void> main() async {
@@ -40,9 +42,13 @@ class MyApp extends StatelessWidget {
   Route onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/registration':
-        return AppRouteBuilder.defaultRouteBuilder(RegistrationPage());
+        return AppRouteBuilder.defaultRouteBuilder(const EmailPage());
       case '/code':
-        return AppRouteBuilder.defaultRouteBuilder(CodePage());
+        return AppRouteBuilder.defaultRouteBuilder(const CodePage());
+      case '/password':
+        return AppRouteBuilder.defaultRouteBuilder(const PasswordPage());
+      case '/signIn':
+        return AppRouteBuilder.defaultRouteBuilder(SignInPage());
       default:
         return AppRouteBuilder.defaultRouteBuilder(StartPage());
     }

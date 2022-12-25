@@ -29,7 +29,7 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
     AnimationController controller = AnimationController(
         duration: const Duration(seconds: 2),
         vsync: this);
-    animation = Tween<double>(begin: 0, end: pi*2).animate(controller);
+    animation = Tween<double>(begin: 2*pi, end: 0).animate(controller);
 
     animation.addStatusListener((status) {
         if (status == AnimationStatus.completed) {
@@ -111,16 +111,16 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
                   padding: buttonPadding,
                   child: ElevatedButton(
                       style: ButtonStyles.defaultButton,
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/signIn');
+                      },
                       child: Align(
                         alignment: Alignment.center,
                         child: Text(
                             AppLocalizations.of(context)!.haveAccount,
                           textAlign: TextAlign.center,
                         ),
-
                       )
-
                   ),
                 ),
             )
