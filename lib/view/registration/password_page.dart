@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -121,6 +120,7 @@ class _PasswordPageState extends State<PasswordPage> {
     );
   }
 
+  // Кнопка перехода на следующую страницу
   Widget _nextButton(BuildContext context) {
     return Container(
         padding: const EdgeInsets.all(20),

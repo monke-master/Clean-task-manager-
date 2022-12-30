@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 
 import '../helpers/string_helper.dart';
 import '../styles/app_colors.dart';
+import '../styles/button_styles.dart';
 import '../styles/text_styles.dart';
 
 class SignInPage extends StatefulWidget {
@@ -18,7 +19,9 @@ class SignInPage extends StatefulWidget {
 
 class _SignInPageState extends State<SignInPage> {
 
+  // Ключ для получения состояния формы с данными уз
   final _formKey = GlobalKey<FormState>();
+  // Контроллеры для получения вводимых данных
   final TextEditingController _controller1 = TextEditingController();
   final TextEditingController _controller2 = TextEditingController();
 
@@ -26,23 +29,33 @@ class _SignInPageState extends State<SignInPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: _pageBody(context),
+      floatingActionButton: _nextButton(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      resizeToAvoidBottomInset: false,
     );
   }
 
   Widget _pageBody(BuildContext context) {
     return Column(
       children: [
-        Text(
-          AppLocalizations.of(context)!.signIn,
-          style: TextStyles.headerStyle),
-        SvgPicture.asset(
-            "assets/task.svg",
-            color: AppColors.lightBlue),
+        Padding(  // Заголовок
+          padding: const EdgeInsets.only(top: 60),
+          child: Text(
+              AppLocalizations.of(context)!.signIn,
+              style: TextStyles.headerStyle),
+        ),
+        const Icon( // Логотип
+          Icons.account_box,
+          color: AppColors.lightBlue,
+          size: 170,
+        ),
         _form(context),
+        _forgotPasswordHint(context),
       ],
     );
   }
 
+  // Форма ввода данных
   Widget _form(BuildContext context) {
     return Form(
       key: _formKey,
@@ -54,15 +67,22 @@ class _SignInPageState extends State<SignInPage> {
             child: TextFormField(
               controller: _controller1,
               autofocus: true,
-              keyboardType: TextInputType.visiblePassword,
+              keyboardType: TextInputType.emailAddress,
+              // Дизайн поля ввода
               decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: AppLocalizations.of(context)!.password,
+                  labelText: AppLocalizations.of(context)!.email,
                   fillColor: AppColors.lightBlue
               ),
-              validator: (value) {},
+              validator: (value) {
+                // Проверка email на правильный формат
+                return (value != null && !StringHelper.isValidEmail(value)) ?
+                        AppLocalizations.of(context)!.incorrectEmail : null;
+              },
               onChanged: (value) => setState(() {}),
               onEditingComplete: () {
+                // Удаление фокуса на поле ввода при завершении ввода, если
+                // формат данных правильный
                 if (_formKey.currentState!.validate()) {
                   FocusScopeNode focusScope = FocusScope.of(context);
                   if (!focusScope.hasPrimaryFocus) {
@@ -78,27 +98,52 @@ class _SignInPageState extends State<SignInPage> {
               autofocus: true,
               controller: _controller2,
               keyboardType: TextInputType.visiblePassword,
+              // Дизайн поля ввода
               decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
                   labelText: AppLocalizations.of(context)!.repeatPassword,
                   fillColor: AppColors.lightBlue
               ),
-              validator: (value) {
-                return (value != null && value == _controller1.text)
-                    ? AppLocalizations.of(context)!.passwordsDontMatch : null;
-              },
               onChanged: (value) => setState(() {}),
               onEditingComplete: () {
-                if (!_formKey.currentState!.validate()) {
-                  FocusScopeNode focus = FocusScope.of(context);
-                  if (!focus.hasPrimaryFocus) {
-                    focus.unfocus();
-                  }
+                // Удаление фокуса на поле ввода при завершении ввода
+                FocusScopeNode focus = FocusScope.of(context);
+                if (!focus.hasPrimaryFocus) {
+                  focus.unfocus();
                 }
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _forgotPasswordHint(BuildContext context) {
+    return Container(
+        alignment: Alignment.topLeft,
+        padding: const EdgeInsets.only(top: 10, left: 20),
+        child: InkWell(
+          child: Text(
+            AppLocalizations.of(context)!.forgotPassword,
+            style: TextStyles.hintText,
+            textAlign: TextAlign.start,
+          ),
+          onTap: () {},
+        )
+    );
+  }
+
+  // Кнопка перехода на главную страницу (с проверкой подлиннсоти данных)
+  Widget _nextButton(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: ElevatedButton(
+          style: ButtonStyles.defaultButton,
+          child: Text(
+              AppLocalizations.of(context)!.next
+          ),
+          onPressed: () {} // _controller1.text == _controller2.text ? () =>
       ),
     );
   }

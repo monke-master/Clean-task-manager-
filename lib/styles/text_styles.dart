@@ -31,4 +31,9 @@ class TextStyles {
     fontSize: 20,
   );
 
+  static const TextStyle hintText = TextStyle(
+    color: AppColors.lightBlue,
+    fontSize: 16
+  );
+
 }
