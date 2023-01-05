@@ -4,14 +4,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:task_manager_arch/styles/button_styles.dart';
 
 import '../../styles/app_colors.dart';
+import '../../styles/text_styles.dart';
+import 'category_page.dart';
 
 
 class HomePage extends StatefulWidget {
-  String _newTaskCategory = "no category";
-  DateTime? _newTaskDate = null;
-  TimeOfDay? _newTaskTime = null;
 
   HomePage({Key? key}) : super(key: key);
 
@@ -50,8 +50,6 @@ class _HomePageState extends State<HomePage> {
 
 
   Widget addTaskDialog() {
-    List<String> categories = [];
-    categories.addAll(Data.categories);
     TextEditingController textController = TextEditingController();
     return StatefulBuilder(
         builder: (BuildContext context, StateSetter setDialogState) {
@@ -65,30 +63,30 @@ class _HomePageState extends State<HomePage> {
               ),
               controller: textController,
               // Изменение состояния диалога после изменения вводимого текста
-              onChanged: (value) => setDialogState(() {}),
+              // onChanged: (value) => setDialogState(() {}),
               key: const Key("taskNameField"),
             ),
             actions: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.only(left: 15),
-                    // Список категорий
-                    child: DropdownButton(
-                      key: const Key("categoriesDropdownBtn"),
-                      value: widget._newTaskCategory,
-                      items: Data.categories.map<DropdownMenuItem<String>>((String value) {
-                        return DropdownMenuItem(
-                            value: value,
-                            child: Text(value == "no category"
-                                ? AppLocalizations.of(context)!.noCategory : value)
-                        );
-                      }).toList(),
-                      onChanged: (String? value) =>
-                          setDialogState(() => widget._newTaskCategory = value!),
-                    ),
-                  ),
+                  // Список категорий
+                  // Container(
+                  //   padding: const EdgeInsets.only(left: 15),
+                  //   child: DropdownButton(
+                  //     key: const Key("categoriesDropdownBtn"),
+                  //     value: widget._newTaskCategory,
+                  //     items: Data.categories.map<DropdownMenuItem<String>>((String value) {
+                  //       return DropdownMenuItem(
+                  //           value: value,
+                  //           child: Text(value == "no category"
+                  //               ? AppLocalizations.of(context)!.noCategory : value)
+                  //       );
+                  //     }).toList(),
+                  //     onChanged: (String? value) =>
+                  //         setDialogState(() => widget._newTaskCategory = value!),
+                  //   ),
+                  // ),
                   IconButton(
                     icon: const Icon(
                       Icons.calendar_today,
@@ -103,30 +101,13 @@ class _HomePageState extends State<HomePage> {
                   ),
                   // Закрытие диалога и добавление задачи (с проверкой на пустой ввод)
                   TextButton(
-                    style: textBtnStyle(),
-                    onPressed: textController.text.isEmpty ? null : ()  {
-                      String taskName = textController.text;
-                      if (widget._newTaskDate == null) {
-                        Data.addTask(taskName, widget._newTaskCategory, DateTime.now());
-                      } else {
-                        Data.addTaskWithDate(
-                            taskName,
-                            widget._newTaskCategory,
-                            DateTime.now(),
-                            widget._newTaskDate!,
-                            widget._newTaskTime!,
-                            widget._newTaskTime!.format(context)
-                        );
-                      }
-                      _setHomePageState();
-                      Navigator.pop(context);
-                    },
+                    style: ButtonStyles.dialogButton,
+                    onPressed: () {},
                     key: const Key("enterBtn"),
                     child: Text(AppLocalizations.of(context)!.enter),
                   ),
                 ],
               )
-
             ],
           );
         }
@@ -145,39 +126,41 @@ class _HomePageState extends State<HomePage> {
                 child: _dialogBtn(
                   text: AppLocalizations.of(context)!.date,
                   icon: Icons.calendar_today,
-                  stateText: widget._newTaskDate == null ?
-                  AppLocalizations.of(context)!.noDate :
-                  DateTimeFormatter.formatDate(
-                      widget._newTaskDate!,
-                      Localizations.localeOf(context).toString()
-                  ),
+                  // Выбранная дата или надпись "нет даты"
+                  stateText: "No date",
+                  // stateText: widget._newTaskDate == null ?
+                  // AppLocalizations.of(context)!.noDate :
+                  // DateTimeFormatter.formatDate(
+                  //     widget._newTaskDate!,
+                  //     Localizations.localeOf(context).toString()
+                  // ),
                 ),
                 onTap: () async {
+                  // Выбор даты
                   final date = await _pickDate();
                   if (date == null) return;
-                  setDialogState(() {
-                    widget._newTaskDate = date;
-                  });
+
+                  // setDialogState(() {
+                  //   widget._newTaskDate = date;
+                  // });
                 },
               ),
               divider(),
               InkWell(
-                onTap: widget._newTaskDate == null ?
-                    () => ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(AppLocalizations.of(context)!.pickDateFirst))):
-                    () async {
+                // Выбор времени
+                onTap: () async {
                   final time = await _pickTime();
                   if (time == null) return;
-                  setDialogState(() {
-                    widget._newTaskTime = time;
-                  });
+
                 },
                 child: _dialogBtn(
                   text: AppLocalizations.of(context)!.time,
                   icon: Icons.alarm,
-                  stateText: widget._newTaskTime == null ?
-                  AppLocalizations.of(context)!.no :
-                  widget._newTaskTime!.format(context),
+                  // Выбранное время или надпись "без времени"
+                  stateText: "No date"
+                  // stateText: widget._newTaskTime == null ?
+                  // AppLocalizations.of(context)!.no :
+                  // widget._newTaskTime!.format(context),
                 ),
               ),
               divider(),
@@ -194,17 +177,15 @@ class _HomePageState extends State<HomePage> {
       actions: [
         // Отмена выбора даты
         TextButton(
-          style: textBtnStyle(),
+          style: ButtonStyles.defaultButton,
           onPressed: () {
-            widget._newTaskTime = null;
-            widget._newTaskDate = null;
             Navigator.pop(context);
           },
           child: Text(AppLocalizations.of(context)!.cancel),
         ),
         // Подтверждение выбора даты
         TextButton(
-          style: textBtnStyle(),
+          style: ButtonStyles.defaultButton,
           onPressed: () {
             Navigator.pop(context);
           },
@@ -246,13 +227,13 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.only(left: 7),
             child: Text(
               text,
-              style: defaultTxt(),
+              style: TextStyles.defaultTextStyle,
             ),
           ),
         ),
         Text(
           stateText,
-          style: stateTxt(),
+          style: TextStyles.pickedDataTextStyle,
         ),
       ],
     );
@@ -263,6 +244,16 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
-
+  // Разделитель
+  Widget divider() {
+    return const Padding(
+        padding: EdgeInsets.only(bottom: 10),
+        child: Divider(
+          thickness: 1,
+          endIndent: 0,
+          color: AppColors.lightGray,
+        )
+    );
+  }
 
 }

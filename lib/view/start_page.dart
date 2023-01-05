@@ -70,7 +70,7 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
               bottom: 5, top: 5),
           child: Text(
             AppLocalizations.of(context)!.signUpTip,
-            style: TextStyles.defaultText,
+            style: TextStyles.defaultTextStyle,
             textAlign: TextAlign.center,
           ),
         ),
@@ -133,7 +133,9 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
                   padding: buttonPadding,
                   child: TextButton(
                       style: ButtonStyles.defaultTextButton,
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/home');
+                      },
                       child: Text(AppLocalizations.of(context)!.later)
                   ),
                 ),

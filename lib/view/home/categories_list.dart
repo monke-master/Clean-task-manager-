@@ -1,21 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:task_manager/data.dart';
-import 'package:task_manager/styles.dart';
-import 'package:task_manager/task.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../../styles/app_colors.dart';
+import '../../styles/button_styles.dart';
+import '../../styles/text_styles.dart';
 
 // Список категорий
 class CategoriesList extends StatefulWidget {
-
-  Function(String) onCategoryChanged;
-  VoidCallback onCategoryDeleted;
-  String? selectedCategory;
-
-
-  CategoriesList({
-    required this.selectedCategory,
-    Key? key, required this.onCategoryChanged,
-    required this.onCategoryDeleted}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() {
@@ -31,12 +22,12 @@ class _CategoriesListState extends State<CategoriesList> {
     return ListView.builder(
         scrollDirection: Axis.horizontal,
         shrinkWrap: true,
-        itemCount: Data.categories.length + 1,
+        itemCount: 1,
         itemBuilder: (context, index) {
-          if (index == Data.categories.length) {
+          if (index == 0) {
             return _addCategoryBtn(context);
           }
-          return _buildCategory(context, Data.categories[index]);
+          return _buildCategory(context, "Nothing");
         }
     );
   }
@@ -50,9 +41,9 @@ class _CategoriesListState extends State<CategoriesList> {
       child: Container(
         padding: const EdgeInsets.only(top: 50, left: 8, right: 8, bottom: 20),
         child: ElevatedButton(
-            style: categoryBtn(category == widget.selectedCategory),
+            style: ButtonStyles.categoryButton,
             child: Text((category == "no category") ? AppLocalizations.of(context)!.all : category),
-            onPressed: () => widget.onCategoryChanged(category)
+            onPressed: () {}
         ),
       ),
     );
@@ -87,7 +78,7 @@ class _CategoriesListState extends State<CategoriesList> {
           ),
           title: Text(
             AppLocalizations.of(context)!.edit,
-            style: defaultTxt(),
+            style: TextStyles.defaultTextStyle,
           ),
           onTap: () {
             _showEditCategoryDialog(
@@ -106,13 +97,9 @@ class _CategoriesListState extends State<CategoriesList> {
           ),
           title: Text(
             AppLocalizations.of(context)!.delete,
-            style: defaultTxt(),
+            style: TextStyles.defaultTextStyle,
           ),
           onTap: () {
-            Data.deleteCategory(category);
-            _setPageState();
-            widget.onCategoryDeleted();
-            Navigator.pop(context);
           },
         ),
       ],
@@ -143,14 +130,7 @@ class _CategoriesListState extends State<CategoriesList> {
                   actions: [
                     // Закрытие диалога
                     TextButton(
-                      onPressed: textController.text.isEmpty? null : () {
-                        String newCategory = textController.text;
-                        Data.editCategory(category, newCategory);
-                        widget.onCategoryChanged(newCategory);
-                        _setPageState();
-                        Navigator.pop(context);
-                        onClosed();
-                      },
+                      onPressed:() {},
                       child: Text(AppLocalizations.of(context)!.enter),
                     )
                   ],
@@ -166,7 +146,7 @@ class _CategoriesListState extends State<CategoriesList> {
       padding: const EdgeInsets.only(top: 50, left: 8, right: 8, bottom: 20),
       child: ElevatedButton(
         key: const Key("addCategoryBtn"),
-        style: categoryBtn(false),
+        style: ButtonStyles.categoryButton,
         onPressed: () => _showAddCategoryDialog(context),
         child: const Text("+"),
       ),
@@ -197,13 +177,7 @@ class _CategoriesListState extends State<CategoriesList> {
                 actions: [
                   // Закрытие диалога
                   TextButton(
-                    onPressed: textController.text.isEmpty? null : () {
-                      String newCategory = textController.text;
-                      // Добавление категории
-                      Data.addCategory(newCategory);
-                      _setPageState();
-                      Navigator.pop(context);
-                    },
+                    onPressed: () {},
                     key: const Key("enterBtn"),
                     child: Text(AppLocalizations.of(context)!.enter),
                   )

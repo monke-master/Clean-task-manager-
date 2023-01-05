@@ -134,7 +134,7 @@ class _SignInPageState extends State<SignInPage> {
         child: InkWell(
           child: Text(
             AppLocalizations.of(context)!.forgotPassword,
-            style: TextStyles.hintText,
+            style: TextStyles.hintTextStyle,
             textAlign: TextAlign.start,
           ),
           onTap: () {

@@ -4,6 +4,7 @@ import 'package:localstore/localstore.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:task_manager_arch/view/app_route_builder.dart';
+import 'package:task_manager_arch/view/home/home_page.dart';
 import 'package:task_manager_arch/view/password_recovery/pas_rec_code_page.dart';
 import 'package:task_manager_arch/view/password_recovery/pas_rec_email_page.dart';
 import 'package:task_manager_arch/view/password_recovery/pas_rec_password_page.dart';
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
     );
   }
 
+  // Routing
   Route onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
       case '/registration/email':
@@ -58,6 +60,8 @@ class MyApp extends StatelessWidget {
         return AppRouteBuilder.defaultRouteBuilder(const PasRecCodePage());
       case '/password_recovery/password':
         return AppRouteBuilder.defaultRouteBuilder(const PasRecPasswordPage());
+      case '/home':
+        return AppRouteBuilder.defaultRouteBuilder(HomePage());
       default:
         return AppRouteBuilder.defaultRouteBuilder(StartPage());
     }

@@ -115,6 +115,13 @@ class _PasRecPasswordPageState extends State<PasRecPasswordPage> {
               },
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              AppLocalizations.of(context)!.dontForget,
+              style: TextStyles.textStyle,
+            ),
+          )
         ],
       ),
     );

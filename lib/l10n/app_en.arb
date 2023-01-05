@@ -28,5 +28,22 @@
     "passwordRecovery": "Password recovery",
     "verifyEmailForRecovery": "Enter your email address used for signing up. We will send code to it to make sure it's your account.",
     "newPassword": "New password",
-    "dontForget": "Don't forget anymore!)"
+    "dontForget": "Don't forget anymore!)",
+
+    "createTask": "Create task",
+    "noCategory": "No category",
+    "newCategory": "New category",
+    "noTasks": "There is no any tasks yet. You can rest now!",
+    "completedTasks": "Completed tasks",
+    "edit": "Edit",
+    "delete": "Delete",
+    "enter": "Enter",
+    "all": "All",
+    "date": "Date",
+    "time": "Time",
+    "repeate": "Repeate",
+    "no": "No",
+    "noDate": "No date",
+    "cancel": "Cancel",
+    "pickDateFirst": "Pick a date first!"
 }
