@@ -1,29 +1,26 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
-import '../helpers/string_helper.dart';
-import '../styles/app_colors.dart';
-import '../styles/button_styles.dart';
-import '../styles/text_styles.dart';
+import '../../helpers/string_helper.dart';
+import '../../styles/app_colors.dart';
+import '../../styles/button_styles.dart';
+import '../../styles/text_styles.dart';
 
-class SignInPage extends StatefulWidget {
-  const SignInPage({super.key});
+class PasRecPasswordPage extends StatefulWidget {
 
+  const PasRecPasswordPage({super.key});
 
   @override
   State<StatefulWidget> createState() {
-    return _SignInPageState();
+    return _PasRecPasswordPageState();
   }
 
 }
 
-class _SignInPageState extends State<SignInPage> {
+class _PasRecPasswordPageState extends State<PasRecPasswordPage> {
 
-  // Ключ для получения состояния формы с данными уз
   final _formKey = GlobalKey<FormState>();
-  // Контроллеры для получения вводимых данных
   final TextEditingController _controller1 = TextEditingController();
   final TextEditingController _controller2 = TextEditingController();
 
@@ -34,8 +31,8 @@ class _SignInPageState extends State<SignInPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-            AppLocalizations.of(context)!.signIn,
-            style: TextStyles.headerStyle
+          AppLocalizations.of(context)!.passwordRecovery,
+          style: TextStyles.headerStyle,
         ),
         leading: BackButton(
           onPressed: () => Navigator.pop(context),
@@ -45,52 +42,44 @@ class _SignInPageState extends State<SignInPage> {
       body: _pageBody(context),
       floatingActionButton: _nextButton(context),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      resizeToAvoidBottomInset: false,
     );
   }
 
   Widget _pageBody(BuildContext context) {
-    return Column(
-      children: [
-        const Icon( // Логотип
-          Icons.account_box,
-          color: AppColors.lightBlue,
-          size: 170,
-        ),
-        _form(context),
-        _forgotPasswordHint(context),
-      ],
-    );
-  }
-
-  // Форма ввода данных
-  Widget _form(BuildContext context) {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Padding( // Ввод email
+          Padding( // Ввод пароля
             padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
             child: TextFormField(
               controller: _controller1,
               autofocus: true,
-              keyboardType: TextInputType.emailAddress,
-              // Дизайн поля ввода
+              keyboardType: TextInputType.visiblePassword,
               decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
-                  labelText: AppLocalizations.of(context)!.email,
+                  labelText: AppLocalizations.of(context)!.newPassword,
                   fillColor: AppColors.lightBlue
               ),
               validator: (value) {
-                // Проверка email на правильный формат
-                return (value != null && !StringHelper.isValidEmail(value)) ?
-                        AppLocalizations.of(context)!.incorrectEmail : null;
+                if (value == null) {
+                  return null;
+                }
+                if (!StringHelper.isValidPassword(value)) {
+
+                  if (!StringHelper.containsLetter(value)) {
+                    return AppLocalizations.of(context)!.atLeastOneLetter;
+                  }
+                  if (value.length < 8 || value.length > 32) {
+                    return AppLocalizations.of(context)!.passwordLengthError;
+                  }
+                  return AppLocalizations.of(context)!.incorrectPasswordFormat;
+                }
+                return null;
               },
               onChanged: (value) => setState(() {}),
               onEditingComplete: () {
-                // Удаление фокуса на поле ввода при завершении ввода, если
-                // формат данных правильный
                 if (_formKey.currentState!.validate()) {
                   FocusScopeNode focusScope = FocusScope.of(context);
                   if (!focusScope.hasPrimaryFocus) {
@@ -100,24 +89,28 @@ class _SignInPageState extends State<SignInPage> {
               },
             ),
           ),
-          Padding( // Ввод пароля
+          Padding( // Повторить пароль
             padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
             child: TextFormField(
               autofocus: true,
               controller: _controller2,
               keyboardType: TextInputType.visiblePassword,
-              // Дизайн поля ввода
               decoration: InputDecoration(
                   border: const UnderlineInputBorder(),
                   labelText: AppLocalizations.of(context)!.repeatPassword,
                   fillColor: AppColors.lightBlue
               ),
+              validator: (value) {
+                return (value != null && value != "" && value != _controller1.text)
+                    ? AppLocalizations.of(context)!.passwordsDontMatch : null;
+              },
               onChanged: (value) => setState(() {}),
               onEditingComplete: () {
-                // Удаление фокуса на поле ввода при завершении ввода
-                FocusScopeNode focus = FocusScope.of(context);
-                if (!focus.hasPrimaryFocus) {
-                  focus.unfocus();
+                if (!_formKey.currentState!.validate()) {
+                  FocusScopeNode focus = FocusScope.of(context);
+                  if (!focus.hasPrimaryFocus) {
+                    focus.unfocus();
+                  }
                 }
               },
             ),
@@ -127,24 +120,7 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Widget _forgotPasswordHint(BuildContext context) {
-    return Container(
-        alignment: Alignment.topLeft,
-        padding: const EdgeInsets.only(top: 10, left: 20),
-        child: InkWell(
-          child: Text(
-            AppLocalizations.of(context)!.forgotPassword,
-            style: TextStyles.hintText,
-            textAlign: TextAlign.start,
-          ),
-          onTap: () {
-            Navigator.pushNamed(context, '/password_recovery/email');
-          },
-        )
-    );
-  }
-
-  // Кнопка перехода на главную страницу (с проверкой подлинности данных)
+  // Кнопка перехода на следующую страницу
   Widget _nextButton(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -157,7 +133,5 @@ class _SignInPageState extends State<SignInPage> {
       ),
     );
   }
-
-
 
 }

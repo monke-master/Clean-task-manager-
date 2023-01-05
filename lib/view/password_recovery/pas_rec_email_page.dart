@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../../helpers/string_helper.dart';
 import '../../styles/app_colors.dart';
 import '../../styles/button_styles.dart';
 import '../../styles/text_styles.dart';
 
-class CodePage extends StatefulWidget {
+// Страница с вводом email для восстановления пароля
+class PasRecEmailPage extends StatefulWidget {
+  const PasRecEmailPage({super.key});
 
-  const CodePage({super.key});
 
   @override
   State<StatefulWidget> createState() {
-    return _CodePageState();
+    return _PasRecEmailPageState();
   }
 
 }
 
-class _CodePageState extends State<CodePage> {
+class _PasRecEmailPageState extends State<PasRecEmailPage> {
 
   final _formKey = GlobalKey<FormState>();
-
   final TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +35,7 @@ class _CodePageState extends State<CodePage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          AppLocalizations.of(context)!.registration,
+          AppLocalizations.of(context)!.passwordRecovery,
           style: TextStyles.headerStyle,
         ),
         leading: BackButton(
@@ -43,62 +49,65 @@ class _CodePageState extends State<CodePage> {
     );
   }
 
+  // Тело страницы
   Widget _pageBody(BuildContext context) {
     return Form(
       key: _formKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Ввод email
           Padding(
             padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
             child: TextFormField(
               autofocus: true,
               controller: _controller,
-              keyboardType: TextInputType.number,
+              keyboardType: TextInputType.emailAddress,
+              // Дизайн поля ввода
               decoration: InputDecoration(
-                  border: const UnderlineInputBorder(),
-                  labelText: AppLocalizations.of(context)!.code,
-                  fillColor: AppColors.lightBlue
+                border: const UnderlineInputBorder(),
+                labelText: AppLocalizations.of(context)!.email,
+                fillColor: AppColors.lightBlue,
               ),
-              validator: (value) {
-                return (value != null && value.length != 6) ?
-                        AppLocalizations.of(context)!.incorrectCode : null;
+              // Проверка введенного email на правильный формат
+              validator: (String? value) {
+                return (value != null && !StringHelper.isValidEmail(value)) ?
+                AppLocalizations.of(context)!.incorrectEmail : null;
               },
               onChanged: (value) => setState(() {}),
+              // Удаление фокуса на поле ввода при завершении ввода, если
+              // формат данных правильный
               onEditingComplete: () {
                 if (_formKey.currentState!.validate()) {
-                  FocusScopeNode focus = FocusScope.of(context);
-                  if (!focus.hasPrimaryFocus) {
-                    focus.unfocus();
+                  FocusScopeNode currentFocus = FocusScope.of(context);
+                  if (!currentFocus.hasPrimaryFocus) {
+                    currentFocus.unfocus();
                   }
                 }
               },
             ),
           ),
+          // Подсказка
           Padding(
-              padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.sendNewCode,
-                  ),
-                  Text('0:44'),
-                ],
-              )
+            padding: const EdgeInsets.only(top: 10, left: 20, right: 20),
+            child: Text(
+              AppLocalizations.of(context)!.verifyEmailForRecovery,
+            ),
           )
         ],
-      ));
+      ),
+    );
   }
 
+  // Кнопка перехода на страницу с вводом кода (по нажатию отправляется код)
   Widget _nextButton(BuildContext context) {
     return Container(
         padding: const EdgeInsets.all(20),
         child: ElevatedButton(
           style: ButtonStyles.defaultButton,
-          onPressed: () {
-            Navigator.pushNamed(context, '/registration/password');
-          },
+          onPressed:
+          StringHelper.isValidEmail(_controller.text) ?
+              () => Navigator.pushNamed(context, '/password_recovery/code') : null,
           child: Text(
               AppLocalizations.of(context)!.next
           ),

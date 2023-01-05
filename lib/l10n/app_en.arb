@@ -26,7 +26,7 @@
     "signIn": "Sign In",
     "forgotPassword": "Forgot your password?",
     "passwordRecovery": "Password recovery",
-    "verifyEmailForRecovery": "Enter your email address used for signing up. We will send code to it to make sure it's your accound",
+    "verifyEmailForRecovery": "Enter your email address used for signing up. We will send code to it to make sure it's your account.",
     "newPassword": "New password",
     "dontForget": "Don't forget anymore!)"
 }

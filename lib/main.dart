@@ -4,6 +4,9 @@ import 'package:localstore/localstore.dart';
 
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:task_manager_arch/view/app_route_builder.dart';
+import 'package:task_manager_arch/view/password_recovery/pas_rec_code_page.dart';
+import 'package:task_manager_arch/view/password_recovery/pas_rec_email_page.dart';
+import 'package:task_manager_arch/view/password_recovery/pas_rec_password_page.dart';
 import 'package:task_manager_arch/view/registration/code_page.dart';
 import 'package:task_manager_arch/view/registration/email_page.dart';
 import 'package:task_manager_arch/view/registration/password_page.dart';
@@ -41,14 +44,20 @@ class MyApp extends StatelessWidget {
 
   Route onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case '/registration':
+      case '/registration/email':
         return AppRouteBuilder.defaultRouteBuilder(const EmailPage());
-      case '/code':
+      case '/registration/code':
         return AppRouteBuilder.defaultRouteBuilder(const CodePage());
-      case '/password':
+      case '/registration/password':
         return AppRouteBuilder.defaultRouteBuilder(const PasswordPage());
       case '/signIn':
-        return AppRouteBuilder.defaultRouteBuilder(SignInPage());
+        return AppRouteBuilder.defaultRouteBuilder(const SignInPage());
+      case '/password_recovery/email':
+        return AppRouteBuilder.defaultRouteBuilder(const PasRecEmailPage());
+      case '/password_recovery/code':
+        return AppRouteBuilder.defaultRouteBuilder(const PasRecCodePage());
+      case '/password_recovery/password':
+        return AppRouteBuilder.defaultRouteBuilder(const PasRecPasswordPage());
       default:
         return AppRouteBuilder.defaultRouteBuilder(StartPage());
     }

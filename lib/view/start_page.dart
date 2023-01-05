@@ -94,7 +94,7 @@ class _StartPageState extends State<StartPage> with SingleTickerProviderStateMix
                   child: ElevatedButton(
                       style: ButtonStyles.defaultButton,
                       onPressed: () {
-                        Navigator.pushNamed(context, '/registration');
+                        Navigator.pushNamed(context, '/registration/email');
                       },
                       child: Text(
                         AppLocalizations.of(context)!.signUp,

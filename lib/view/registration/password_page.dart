@@ -101,7 +101,7 @@ class _PasswordPageState extends State<PasswordPage> {
                   fillColor: AppColors.lightBlue
               ),
               validator: (value) {
-                return (value != null && value == _controller1.text)
+                return (value != null && value != "" && value != _controller1.text)
                     ? AppLocalizations.of(context)!.passwordsDontMatch : null;
               },
               onChanged: (value) => setState(() {}),

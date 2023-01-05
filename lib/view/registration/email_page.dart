@@ -99,7 +99,7 @@ class _EmailPageState extends State<EmailPage> {
           style: ButtonStyles.defaultButton,
           onPressed:
             StringHelper.isValidEmail(_controller.text) ?
-                () => Navigator.pushNamed(context, '/code') : null,
+                () => Navigator.pushNamed(context, '/registration/code') : null,
           child: Text(
               AppLocalizations.of(context)!.next
           ),
